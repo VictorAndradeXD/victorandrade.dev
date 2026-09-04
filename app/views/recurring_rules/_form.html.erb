@@ -1,0 +1,60 @@
+<%= form_with model: rule, class: "space-y-6" do |form| %>
+  <%= render "shared/errors", record: rule %>
+
+  <div class="card space-y-5">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <%= form.label :kind, "Tipo", class: "label" %>
+        <%= form.select :kind, [ [ "Saída", "expense" ], [ "Entrada", "income" ] ] %>
+      </div>
+
+      <%= render "shared/money_field", form: form, field: :amount %>
+    </div>
+
+    <div>
+      <%= form.label :description, "Descrição", class: "label" %>
+      <%= form.text_field :description, placeholder: "Aluguel", autofocus: true %>
+    </div>
+
+    <div class="grid gap-4 <%= account_selector_visible? ? "sm:grid-cols-3" : "sm:grid-cols-2" %>">
+      <div>
+        <%= form.label :frequency, "Frequência", class: "label" %>
+        <%= form.select :frequency, RecurringRule::FREQUENCIES.map { |f| [ t("recurring_rule.frequencies.#{f}"), f ] } %>
+      </div>
+
+      <div>
+        <%= form.label :day_of_month, "Dia do mês", class: "label" %>
+        <%= form.number_field :day_of_month, min: 1, max: 31, placeholder: "só para mensal" %>
+      </div>
+
+      <%= render "shared/account_field", form: form %>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div>
+        <%= form.label :starts_on, "Começa em", class: "label" %>
+        <%= form.date_field :starts_on %>
+      </div>
+
+      <div>
+        <%= form.label :ends_on, "Termina em", class: "label" %>
+        <%= form.date_field :ends_on %>
+      </div>
+
+      <div>
+        <%= form.label :tag_id, "Tag", class: "label" %>
+        <%= form.collection_select :tag_id, current_user.tags.order(:name), :id, :name, { include_blank: "Sem tag" } %>
+      </div>
+    </div>
+
+    <label class="flex items-center gap-2 text-sm text-muted">
+      <%= form.check_box :active %>
+      Ativa
+    </label>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <%= form.submit rule.persisted? ? "Salvar" : "Criar recorrência", class: "btn-primary" %>
+    <%= link_to "Cancelar", recurring_rules_path, class: "btn-ghost" %>
+  </div>
+<% end %>

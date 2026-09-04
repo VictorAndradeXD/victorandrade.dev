@@ -1,0 +1,22 @@
+<% content_for :title, "Lançamentos" %>
+
+<div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight">Lançamentos</h1>
+
+  <div class="flex items-center gap-2">
+    <%= link_to "‹", transactions_path(month: (@month - 1.month).strftime("%Y-%m")), class: "btn-ghost px-3" %>
+    <span class="px-3 py-2 rounded-lg bg-elevated border border-hairline text-sm"><%= month_label(@month) %></span>
+    <%= link_to "›", transactions_path(month: (@month + 1.month).strftime("%Y-%m")), class: "btn-ghost px-3" %>
+  </div>
+</div>
+
+<div class="card">
+  <% if @transactions.any? %>
+    <%= render "list", transactions: @transactions %>
+  <% else %>
+    <p class="text-muted text-sm py-10 text-center">
+      Nenhum lançamento em <%= month_label(@month).downcase %>.
+      <%= link_to "Criar um", new_transaction_path, class: "text-brand hover:underline" %>.
+    </p>
+  <% end %>
+</div>

@@ -1,0 +1,131 @@
+<% content_for :title, "Extrato" %>
+
+<div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Extrato</h1>
+    <p class="text-muted text-sm mt-1">
+      <%= long_date(@starts_on) %> a <%= long_date(@ends_on) %>
+      <%= "· #{@account.name}" if @account %>
+    </p>
+  </div>
+
+  <%= link_to "Imprimir", "javascript:window.print()", class: "btn-ghost text-sm print:hidden" %>
+</div>
+
+<%= form_with url: statement_path, method: :get, class: "card mb-6 print:hidden" do |form| %>
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <div>
+      <%= form.label :starts_on, "De", class: "label" %>
+      <%= form.date_field :starts_on, value: @starts_on %>
+    </div>
+
+    <div>
+      <%= form.label :ends_on, "Até", class: "label" %>
+      <%= form.date_field :ends_on, value: @ends_on %>
+    </div>
+
+    <div>
+      <%= form.label :account_id, "Conta", class: "label" %>
+      <%= form.collection_select :account_id, current_user.accounts.order(:name), :id, :name,
+            { include_blank: "Todas as contas", selected: @account&.id } %>
+    </div>
+
+    <div>
+      <%= form.label :tag_id, "Tag", class: "label" %>
+      <%= form.collection_select :tag_id, current_user.tags.order(:name), :id, :name,
+            { include_blank: "Todas as tags", selected: @tag&.id } %>
+    </div>
+
+    <div>
+      <%= form.label :kind, "Tipo", class: "label" %>
+      <%= form.select :kind, [ [ "Entradas e saídas", "" ], [ "Só entradas", "income" ], [ "Só saídas", "expense" ] ],
+            { selected: @kind } %>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap items-center gap-3 mt-4">
+    <%= form.submit "Filtrar", class: "btn-primary" %>
+    <%= link_to "Limpar filtros", statement_path, class: "btn-ghost" %>
+  </div>
+<% end %>
+
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6 print:grid-cols-4 print:gap-2">
+  <div class="card">
+    <p class="text-muted text-sm">Saldo anterior</p>
+    <p class="text-xl font-semibold mt-1.5 tabular-nums <%= amount_color(@opening) %>"><%= money(@opening) %></p>
+  </div>
+  <div class="card">
+    <p class="text-muted text-sm">Entradas</p>
+    <p class="text-xl font-semibold mt-1.5 tabular-nums text-income"><%= money(@income) %></p>
+  </div>
+  <div class="card">
+    <p class="text-muted text-sm">Saídas</p>
+    <p class="text-xl font-semibold mt-1.5 tabular-nums text-expense"><%= money(@expense) %></p>
+  </div>
+  <div class="card">
+    <p class="text-muted text-sm">Saldo final</p>
+    <p class="text-xl font-semibold mt-1.5 tabular-nums <%= amount_color(@closing) %>"><%= money(@closing) %></p>
+  </div>
+</div>
+
+<div class="card overflow-x-auto">
+  <% if @rows.any? %>
+    <table class="w-full text-sm min-w-[46rem]">
+      <thead>
+        <tr class="text-muted text-xs uppercase tracking-wide border-b border-hairline">
+          <th class="text-left font-normal pb-2 pr-3">Data</th>
+          <th class="text-left font-normal pb-2 pr-3">Descrição</th>
+          <th class="text-left font-normal pb-2 pr-3">Conta</th>
+          <th class="text-left font-normal pb-2 pr-3">Tag</th>
+          <th class="text-right font-normal pb-2 pr-3">Valor</th>
+          <th class="text-right font-normal pb-2">Saldo</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% previous_date = nil %>
+        <% @rows.each do |row| %>
+          <% transaction = row[:transaction] %>
+          <tr class="border-b border-hairline/60 last:border-0">
+            <td class="py-2.5 pr-3 whitespace-nowrap text-muted">
+              <%= l transaction.occurred_on, format: "%d/%m" if transaction.occurred_on != previous_date %>
+            </td>
+            <td class="py-2.5 pr-3">
+              <%= link_to transaction.description, transaction, class: "hover:text-brand transition-colors" %>
+              <% if transaction.items.any? %>
+                <span class="text-muted text-xs">
+                  · <%= pluralize(transaction.items.size, "detalhe") %>
+                </span>
+              <% end %>
+            </td>
+            <td class="py-2.5 pr-3 text-muted whitespace-nowrap"><%= transaction.account.name %></td>
+            <td class="py-2.5 pr-3 text-muted whitespace-nowrap">
+              <% if transaction.tag %>
+                <span class="inline-flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full" style="background: <%= transaction.tag.color %>"></span>
+                  <%= transaction.tag.name %>
+                </span>
+              <% else %>
+                —
+              <% end %>
+            </td>
+            <td class="py-2.5 pr-3 text-right tabular-nums whitespace-nowrap <%= amount_color(transaction.signed_amount) %>">
+              <%= money(transaction.signed_amount, signed: true) %>
+            </td>
+            <td class="py-2.5 text-right tabular-nums whitespace-nowrap <%= amount_color(row[:balance]) %>">
+              <%= money(row[:balance]) %>
+            </td>
+          </tr>
+          <% previous_date = transaction.occurred_on %>
+        <% end %>
+      </tbody>
+    </table>
+
+    <p class="text-muted text-xs mt-4">
+      <%= pluralize(@rows.size, "lançamento") %> no período.
+      O saldo acumulado parte do saldo anterior e considera os filtros aplicados.
+    </p>
+  <% else %>
+    <p class="text-muted text-sm py-10 text-center">Nenhum lançamento com esses filtros.</p>
+  <% end %>
+</div>

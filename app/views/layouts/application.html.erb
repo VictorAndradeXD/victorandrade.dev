@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <title><%= content_for(:title) || "Denfis" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#0b0f14">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Denfis">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%# Antes do CSS: sem isto a página pisca escura ao carregar no modo claro. %>
+    <script>
+      try {
+        if (localStorage.getItem("theme") === "light") document.documentElement.dataset.theme = "light"
+      } catch (e) {}
+    </script>
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="min-h-screen">
+    <% if authenticated? %>
+      <header class="border-b border-hairline bg-surface/60 backdrop-blur sticky top-0 z-10 print:hidden">
+        <%# Em tela estreita os links descem para a própria linha e rolam na
+            horizontal; a partir de sm tudo cabe numa linha só. %>
+        <nav class="mx-auto max-w-7xl px-5 py-2.5 flex flex-wrap items-center gap-x-6 gap-y-2 lg:h-14 lg:py-0 lg:flex-nowrap">
+          <%= link_to root_path, class: "font-semibold tracking-tight text-ink" do %>
+            <span class="text-brand">◆</span> Denfis
+          <% end %>
+
+          <div class="order-last w-full overflow-x-auto flex items-center gap-1 text-sm
+                      lg:order-none lg:w-auto lg:overflow-visible">
+            <%= nav_link_to "Visão geral", root_path %>
+            <%= nav_link_to "Lançamentos", transactions_path %>
+            <%= nav_link_to "Extrato", statement_path %>
+            <%= nav_link_to "Contas", accounts_path %>
+            <%= nav_link_to "Tags", tags_path %>
+            <%= nav_link_to "Recorrências", recurring_rules_path %>
+            <%= nav_link_to "Parcelamentos", installment_plans_path %>
+          </div>
+
+          <div class="ml-auto flex items-center gap-3">
+            <button type="button" data-controller="theme" data-action="theme#toggle"
+                    class="btn-ghost text-sm px-2.5" aria-label="Alternar tema">
+              <span data-theme-target="icon">☀</span>
+            </button>
+            <%= link_to new_transaction_path, class: "btn-primary text-sm whitespace-nowrap" do %>
+              <span class="md:hidden">+</span><span class="hidden md:inline">Novo lançamento</span>
+            <% end %>
+            <%= button_to "Sair", session_path, method: :delete, class: "btn-ghost text-sm" %>
+          </div>
+        </nav>
+      </header>
+    <% end %>
+
+    <main class="mx-auto max-w-7xl px-5 py-8 print:px-0 print:py-0 print:max-w-none">
+      <% if notice %>
+        <p class="mb-5 rounded-lg border border-income/30 bg-income/10 text-income px-4 py-2.5 text-sm print:hidden"><%= notice %></p>
+      <% end %>
+      <% if alert %>
+        <p class="mb-5 rounded-lg border border-expense/30 bg-expense/10 text-expense px-4 py-2.5 text-sm print:hidden"><%= alert %></p>
+      <% end %>
+
+      <%= yield %>
+    </main>
+  </body>
+</html>

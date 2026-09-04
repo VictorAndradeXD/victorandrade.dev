@@ -1,0 +1,10 @@
+<% if record.errors.any? %>
+  <div class="rounded-lg border border-expense/30 bg-expense/10 px-4 py-3">
+    <p class="text-expense font-medium mb-1"><%= pluralize(record.errors.count, "erro") %> impediram o salvamento:</p>
+    <ul class="text-sm text-expense/90 list-disc list-inside">
+      <% record.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

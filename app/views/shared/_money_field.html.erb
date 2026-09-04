@@ -1,0 +1,20 @@
+<%
+  # Campo de dinheiro: number_field (teclado numérico no celular, validação
+  # nativa) com o "R$" desenhado por dentro. O valor é formatado com duas casas
+  # porque o BigDecimal renderiza "1240.0", que não se lê como dinheiro.
+  label_text    = local_assigns.fetch(:label, "Valor")
+  min           = local_assigns.fetch(:min, "0.01")
+  placeholder   = local_assigns[:placeholder]
+  data          = local_assigns.fetch(:data, {})
+  wrapper_class = local_assigns.fetch(:wrapper_class, "")
+  value         = form.object.public_send(field)
+%>
+<div class="<%= wrapper_class %>">
+  <%= form.label field, label_text, class: "label" %>
+
+  <div class="relative">
+    <span class="absolute inset-y-0 left-3 flex items-center text-muted text-sm pointer-events-none select-none">R$</span>
+    <%= form.number_field field, step: "0.01", min: min, placeholder: placeholder, data: data,
+          value: value && format("%.2f", value), class: "pl-10 tabular-nums" %>
+  </div>
+</div>

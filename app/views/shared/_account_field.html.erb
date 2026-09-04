@@ -1,0 +1,13 @@
+<% if selectable_accounts.empty? %>
+  <div class="sm:col-span-full rounded-lg border border-expense/30 bg-expense/10 px-4 py-3 text-sm text-expense">
+    Nenhuma conta ativa cadastrada.
+    <%= link_to "Cadastre uma", new_account_path, class: "underline hover:no-underline" %> antes de lançar.
+  </div>
+<% elsif selectable_accounts.one? %>
+  <%= form.hidden_field :account_id, value: selectable_accounts.first.id %>
+<% else %>
+  <div>
+    <%= form.label :account_id, "Conta", class: "label" %>
+    <%= form.collection_select :account_id, selectable_accounts, :id, :name, { prompt: "Selecione" } %>
+  </div>
+<% end %>

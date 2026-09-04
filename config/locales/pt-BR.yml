@@ -1,0 +1,99 @@
+pt-BR:
+  date:
+    formats:
+      default: "%d/%m/%Y"
+      short: "%d de %B"
+      long: "%d de %B de %Y"
+    day_names:
+      - domingo
+      - segunda-feira
+      - terça-feira
+      - quarta-feira
+      - quinta-feira
+      - sexta-feira
+      - sábado
+    abbr_day_names:
+      - dom
+      - seg
+      - ter
+      - qua
+      - qui
+      - sex
+      - sáb
+    month_names:
+      -
+      - Janeiro
+      - Fevereiro
+      - Março
+      - Abril
+      - Maio
+      - Junho
+      - Julho
+      - Agosto
+      - Setembro
+      - Outubro
+      - Novembro
+      - Dezembro
+    abbr_month_names:
+      -
+      - jan
+      - fev
+      - mar
+      - abr
+      - mai
+      - jun
+      - jul
+      - ago
+      - set
+      - out
+      - nov
+      - dez
+    order:
+      - day
+      - month
+      - year
+
+  time:
+    formats:
+      default: "%d/%m/%Y %H:%M"
+      short: "%d/%m %H:%M"
+      long: "%d de %B de %Y às %H:%M"
+    am: "am"
+    pm: "pm"
+
+  number:
+    format:
+      separator: ","
+      delimiter: "."
+      precision: 2
+    currency:
+      format:
+        format: "%u %n"
+        unit: "R$"
+        separator: ","
+        delimiter: "."
+        precision: 2
+
+  support:
+    array:
+      words_connector: ", "
+      two_words_connector: " e "
+      last_word_connector: " e "
+
+  account:
+    kinds:
+      checking: Conta corrente
+      savings: Poupança
+      wallet: Carteira
+      credit_card: Cartão de crédito
+
+  transaction:
+    kinds:
+      income: Entrada
+      expense: Saída
+
+  recurring_rule:
+    frequencies:
+      weekly: Semanal
+      monthly: Mensal
+      yearly: Anual

@@ -1,0 +1,13 @@
+<div class="flex flex-wrap items-end gap-3" data-item-row>
+  <div class="flex-1 min-w-40">
+    <%= form.label :description, "O que foi", class: "label" %>
+    <%= form.text_field :description, placeholder: "gasolina" %>
+  </div>
+
+  <%= render "shared/money_field", form: form, field: :amount, wrapper_class: "w-44",
+        data: { nested_items_target: "itemAmount" } %>
+
+  <%= form.hidden_field :_destroy, value: "0" %>
+
+  <button type="button" class="btn-ghost px-3 mb-0.5" data-action="nested-items#remove" title="Remover">✕</button>
+</div>

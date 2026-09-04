@@ -1,0 +1,48 @@
+<%
+  segments = by_tag.map { |tag, value| [ tag.name, value, tag.color ] }
+  segments << [ "Sem tag", untagged, "#4b5563" ] if untagged.positive?
+
+  radius = 70
+  circumference = 2 * Math::PI * radius
+  offset = 0.0
+%>
+
+<div class="flex flex-col items-center">
+  <div class="relative w-44 h-44">
+    <svg viewBox="0 0 180 180" class="w-full h-full -rotate-90">
+      <circle cx="90" cy="90" r="<%= radius %>" fill="none" stroke="var(--color-elevated)" stroke-width="18" />
+
+    <% segments.each do |(name, value, color)| %>
+      <%
+        fraction = total.positive? ? (value / total).to_f : 0
+        length = fraction * circumference
+      %>
+      <circle cx="90" cy="90" r="<%= radius %>" fill="none"
+              stroke="<%= color %>" stroke-width="18"
+              stroke-dasharray="<%= length %> <%= circumference - length %>"
+              stroke-dashoffset="<%= -offset %>">
+        <title><%= name %>: <%= money(value) %></title>
+      </circle>
+      <% offset += length %>
+    <% end %>
+    </svg>
+
+    <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+      <span class="text-lg font-semibold text-expense"><%= money(total) %></span>
+      <span class="text-xs text-muted">total de saídas</span>
+    </div>
+  </div>
+
+  <ul class="w-full space-y-2 mt-2">
+    <% segments.each do |(name, value, color)| %>
+      <li class="flex items-center gap-2 text-sm">
+        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background: <%= color %>"></span>
+        <span class="text-muted truncate"><%= name %></span>
+        <span class="ml-auto tabular-nums"><%= money(value) %></span>
+        <span class="text-muted text-xs w-12 text-right tabular-nums">
+          <%= total.positive? ? "#{((value / total) * 100).round(1)}%" : "—" %>
+        </span>
+      </li>
+    <% end %>
+  </ul>
+</div>

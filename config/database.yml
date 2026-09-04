@@ -1,0 +1,24 @@
+# PostgreSQL rodando em container (ver docker-compose.yml na raiz do projeto).
+# Host, porta, usuário e senha vêm do ambiente para não travar o setup de
+# ninguém; os defaults batem com o compose.
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host:     <%= ENV.fetch("DENFIS_DATABASE_HOST", "localhost") %>
+  port:     <%= ENV.fetch("DENFIS_DATABASE_PORT", 5432) %>
+  username: <%= ENV.fetch("DENFIS_DATABASE_USER", "denfis") %>
+  password: <%= ENV.fetch("DENFIS_DATABASE_PASSWORD", "denfis") %>
+
+development:
+  <<: *default
+  database: denfis_development
+
+test:
+  <<: *default
+  database: denfis_test
+
+production:
+  <<: *default
+  database: denfis_production
+  password: <%= ENV["DENFIS_DATABASE_PASSWORD"] %>

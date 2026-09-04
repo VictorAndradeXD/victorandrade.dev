@@ -1,0 +1,41 @@
+<% content_for :title, "Parcelamentos" %>
+
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Parcelamentos</h1>
+    <p class="text-muted text-sm mt-1">Uma compra dividida vira um lançamento por parcela.</p>
+  </div>
+  <%= link_to "Novo parcelamento", new_installment_plan_path, class: "btn-primary text-sm" %>
+</div>
+
+<div class="card">
+  <% if @plans.any? %>
+    <ul class="divide-y divide-hairline">
+      <% @plans.each do |plan| %>
+        <li class="py-3 first:pt-0 last:pb-0 flex items-center gap-3">
+          <div class="min-w-0 flex-1">
+            <p class="font-medium truncate"><%= plan.description %></p>
+            <p class="text-xs text-muted mt-0.5">
+              <%= plan.installments_count %>x · <%= plan.account.name %>
+              · 1ª em <%= l plan.first_due_on, format: "%d/%m/%Y" %>
+            </p>
+          </div>
+
+          <span class="tabular-nums font-medium <%= plan.expense? ? 'text-expense' : 'text-income' %>">
+            <%= money(plan.total_amount) %>
+          </span>
+
+          <%= button_to plan, method: :delete, class: "#{icon_button_classes(:danger)} shrink-0",
+                title: "Excluir", aria: { label: "Excluir parcelamento" },
+                form: { data: { turbo_confirm: "Excluir o parcelamento e todas as #{plan.installments_count} parcelas?" } } do %>
+            <%= action_icon(:trash) %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-muted text-sm py-10 text-center">
+      Nenhum parcelamento ainda. <%= link_to "Criar o primeiro", new_installment_plan_path, class: "text-brand hover:underline" %>.
+    </p>
+  <% end %>
+</div>

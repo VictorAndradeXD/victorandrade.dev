@@ -1,0 +1,56 @@
+<% content_for :title, "Recorrências" %>
+
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Recorrências</h1>
+    <p class="text-muted text-sm mt-1">Aluguel, plano de saúde, salário — o que se repete.</p>
+  </div>
+  <%= link_to "Nova recorrência", new_recurring_rule_path, class: "btn-primary text-sm" %>
+</div>
+
+<div class="card">
+  <% if @rules.any? %>
+    <ul class="divide-y divide-hairline">
+      <% @rules.each do |rule| %>
+        <li class="py-3 first:pt-0 last:pb-0 flex items-center gap-3">
+          <div class="min-w-0 flex-1">
+            <p class="font-medium truncate">
+              <%= rule.description %>
+              <% unless rule.active? %>
+                <span class="ml-2 text-xs text-muted border border-hairline rounded px-1.5 py-0.5">pausada</span>
+              <% end %>
+            </p>
+            <p class="text-xs text-muted mt-0.5">
+              <%= t("recurring_rule.frequencies.#{rule.frequency}") %>
+              <% if rule.frequency_monthly? && rule.day_of_month %> · todo dia <%= rule.day_of_month %><% end %>
+              · <%= rule.account.name %>
+              · desde <%= l rule.starts_on, format: "%d/%m/%Y" %>
+              <% if rule.ends_on %> até <%= l rule.ends_on, format: "%d/%m/%Y" %><% end %>
+            </p>
+          </div>
+
+          <span class="tabular-nums font-medium <%= rule.expense? ? 'text-expense' : 'text-income' %>">
+            <%= money(rule.amount) %>
+          </span>
+
+          <div class="flex items-center gap-1 shrink-0">
+            <%# "Gerar mês" fica com texto: é uma ação que ninguém adivinha por ícone. %>
+            <%= button_to "Gerar mês", materialize_recurring_rule_path(rule),
+                  class: "text-xs #{icon_button_classes} px-2" %>
+            <%= link_to action_icon(:pencil), edit_recurring_rule_path(rule),
+                  class: icon_button_classes, title: "Editar", aria: { label: "Editar recorrência" } %>
+            <%= button_to rule, method: :delete, class: icon_button_classes(:danger),
+                  title: "Excluir", aria: { label: "Excluir recorrência" },
+                  form: { data: { turbo_confirm: "Excluir esta recorrência? Os lançamentos já gerados permanecem." } } do %>
+              <%= action_icon(:trash) %>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-muted text-sm py-10 text-center">
+      Nenhuma recorrência ainda. <%= link_to "Criar a primeira", new_recurring_rule_path, class: "text-brand hover:underline" %>.
+    </p>
+  <% end %>
+</div>

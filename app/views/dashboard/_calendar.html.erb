@@ -1,0 +1,35 @@
+<%
+  first_cell = month.beginning_of_month.beginning_of_week(:sunday)
+  last_cell  = month.end_of_month.end_of_week(:sunday)
+%>
+<div class="grid grid-cols-7 gap-1.5 text-center">
+  <% I18n.t("date.abbr_day_names").each do |day| %>
+    <div class="text-xs text-muted uppercase tracking-wide pb-1"><%= day %></div>
+  <% end %>
+
+  <% (first_cell..last_cell).each do |date| %>
+    <% if date.month != month.month %>
+      <div class="aspect-square rounded-lg border border-transparent p-1.5 flex flex-col items-center justify-center text-muted/40">
+        <span class="text-xs"><%= date.day %></span>
+      </div>
+    <% else %>
+      <%
+        net = daily[date]
+        tone = if net.nil? then "border-hairline hover:border-muted"
+        elsif net.negative? then "bg-expense/10 border-expense/30 hover:border-expense/60"
+        else "bg-income/10 border-income/30 hover:border-income/60"
+        end
+      %>
+      <%= link_to day_path(date: date.iso8601), data: { turbo_frame: "day_detail" },
+            class: "aspect-square rounded-lg border p-1.5 flex flex-col items-center justify-center
+                    transition-colors cursor-pointer #{tone}" do %>
+        <span class="text-xs text-muted"><%= date.day %></span>
+        <% if net %>
+          <span class="text-[10px] font-medium leading-tight mt-0.5 <%= amount_color(net) %>">
+            <%= compact_money(net) %>
+          </span>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

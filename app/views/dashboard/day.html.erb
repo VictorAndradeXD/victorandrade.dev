@@ -1,0 +1,37 @@
+<% content_for :title, long_date(@date) %>
+
+<%= turbo_frame_tag "day_detail" do %>
+  <dialog data-controller="dialog"
+          data-action="click->dialog#closeOnBackdrop close->dialog#teardown"
+          aria-label="Lançamentos de <%= long_date(@date) %>">
+    <div class="max-h-[80vh] overflow-y-auto p-5">
+      <div class="flex items-start justify-between gap-3 mb-4">
+        <div>
+          <h2 class="text-lg font-medium"><%= long_date(@date) %></h2>
+          <p class="text-xs text-muted mt-0.5">
+            <%= @transactions.size.zero? ? "Nenhum lançamento neste dia" : pluralize(@transactions.size, "lançamento") %>
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0">
+          <% if @transactions.any? %>
+            <span class="tabular-nums font-medium <%= amount_color(@net) %>"><%= money(@net, signed: true) %></span>
+          <% end %>
+          <button type="button" data-action="dialog#close"
+                  class="text-muted hover:text-ink text-lg leading-none px-1" title="Fechar (Esc)">✕</button>
+        </div>
+      </div>
+
+      <% if @transactions.any? %>
+        <%= render "transactions/list", transactions: @transactions %>
+      <% else %>
+        <p class="text-muted text-sm py-2">Nada foi lançado nesta data.</p>
+      <% end %>
+
+      <div class="mt-5 pt-4 border-t border-hairline">
+        <%= link_to "+ Criar lançamento nesta data", new_transaction_path(occurred_on: @date),
+              data: { turbo_frame: "_top" }, class: "text-sm text-brand hover:underline" %>
+      </div>
+    </div>
+  </dialog>
+<% end %>

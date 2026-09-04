@@ -1,0 +1,52 @@
+<% content_for :title, "Novo parcelamento" %>
+
+<h1 class="text-2xl font-semibold tracking-tight mb-6">Novo parcelamento</h1>
+
+<%= form_with model: @plan, class: "space-y-6" do |form| %>
+  <%= render "shared/errors", record: @plan %>
+
+  <div class="card space-y-5">
+    <div>
+      <%= form.label :description, "Descrição", class: "label" %>
+      <%= form.text_field :description, placeholder: "Notebook", autofocus: true %>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div>
+        <%= form.label :kind, "Tipo", class: "label" %>
+        <%= form.select :kind, [ [ "Saída", "expense" ], [ "Entrada", "income" ] ] %>
+      </div>
+
+      <%= render "shared/money_field", form: form, field: :total_amount, label: "Valor total" %>
+
+      <div>
+        <%= form.label :installments_count, "Parcelas", class: "label" %>
+        <%= form.number_field :installments_count, min: 2, max: 360 %>
+      </div>
+    </div>
+
+    <div class="grid gap-4 <%= account_selector_visible? ? "sm:grid-cols-3" : "sm:grid-cols-2" %>">
+      <div>
+        <%= form.label :first_due_on, "Primeira parcela", class: "label" %>
+        <%= form.date_field :first_due_on %>
+      </div>
+
+      <%= render "shared/account_field", form: form %>
+
+      <div>
+        <%= form.label :tag_id, "Tag", class: "label" %>
+        <%= form.collection_select :tag_id, current_user.tags.order(:name), :id, :name, { include_blank: "Sem tag" } %>
+      </div>
+    </div>
+
+    <p class="text-muted text-sm">
+      As parcelas são criadas na hora, uma por mês a partir da data acima.
+      A sobra do arredondamento vai na primeira, então a soma bate com o total.
+    </p>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <%= form.submit "Criar parcelamento", class: "btn-primary" %>
+    <%= link_to "Cancelar", installment_plans_path, class: "btn-ghost" %>
+  </div>
+<% end %>

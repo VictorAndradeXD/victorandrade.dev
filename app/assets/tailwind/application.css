@@ -1,0 +1,178 @@
+@import "tailwindcss";
+
+/* `inline` faz as utilities apontarem para var(--x) em vez de copiar o valor,
+   que é o que permite trocar de tema em tempo de execução sem recompilar. */
+@theme inline {
+  --color-canvas:   var(--canvas);
+  --color-surface:  var(--surface);
+  --color-elevated: var(--elevated);
+  --color-hairline: var(--hairline);
+  --color-ink:      var(--ink);
+  --color-muted:    var(--muted);
+  --color-brand:    var(--brand);
+  --color-income:   var(--income);
+  --color-expense:  var(--expense);
+
+  --font-sans: "Inter var", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Escuro é o padrão do Denfis, não uma variante: é o que vale sem atributo
+   nenhum no <html>, inclusive antes de o JavaScript rodar. */
+:root {
+  color-scheme: dark;
+
+  --canvas:   #0b0f14;
+  --surface:  #131a22;
+  --elevated: #1b2530;
+  --hairline: #24303d;
+  --ink:      #e6edf3;
+  --muted:    #8b9bab;
+  --brand:    #818cf8;
+  --income:   #34d399;
+  --expense:  #fb7185;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --canvas:   #f5f7fa;
+  --surface:  #ffffff;
+  --elevated: #eef1f6;
+  --hairline: #dde3ec;
+  --ink:      #111927;
+  --muted:    #5b6b7f;
+  --brand:    #4f46e5;
+  --income:   #047857;
+  --expense:  #be123c;
+}
+
+/* No papel, tinta clara sobre branco não se lê. Vale para os dois temas: quem
+   imprime do modo escuro recebe a mesma folha legível. */
+@media print {
+  :root, :root[data-theme="light"] {
+    color-scheme: light;
+
+    --canvas:   #ffffff;
+    --surface:  #ffffff;
+    --elevated: #ffffff;
+    --hairline: #c8ced8;
+    --ink:      #000000;
+    --muted:    #444c58;
+    --brand:    #2a2f6b;
+    --income:   #0f5132;
+    --expense:  #8a1230;
+  }
+
+  /* Cartões viram apenas seções: borda e sombra só gastam tinta.
+     Sem break-inside aqui de propósito: o card da tabela do extrato é maior
+     que uma página, e "não quebre" faz o navegador empurrá-lo inteiro para a
+     folha seguinte, deixando a primeira quase em branco. */
+  .card {
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  /* Só o que de fato cabe numa página é que não deve ser partido no meio. */
+  tr, li {
+    break-inside: avoid;
+  }
+
+  /* Cabeçalho da tabela se repete a cada folha. */
+  thead {
+    display: table-header-group;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  /* Na tela a tabela larga rola dentro do card. No papel não há para onde
+     rolar: o container recorta as bordas e a coluna de saldo sai decepada. */
+  .overflow-x-auto {
+    overflow: visible !important;
+  }
+
+  table {
+    min-width: 0 !important;
+    width: 100%;
+    font-size: 9pt;
+  }
+
+  /* Linhas mais justas: com o espaçamento de tela, um mês comum transborda
+     por 5 ou 6 lançamentos e desperdiça uma folha quase inteira. */
+  th, td {
+    padding-top: 0.28rem !important;
+    padding-bottom: 0.28rem !important;
+  }
+
+  h1 {
+    font-size: 15pt;
+  }
+
+  /* Respiro entre os blocos, já que o card perdeu o padding. */
+  main > * + * {
+    margin-top: 1.25rem;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+  }
+
+  /* Só campos de entrada. Sem o :not, o `w-full` pegaria também os
+     input[type=submit] e esticaria todo botão de formulário pela linha
+     inteira, por cima do .btn-primary (que não define largura). */
+  input:not([type="submit"], [type="button"], [type="reset"], [type="checkbox"], [type="radio"]),
+  select,
+  textarea {
+    @apply bg-elevated border border-hairline text-ink rounded-lg px-3 py-2 w-full
+           placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand/60 focus:border-transparent;
+  }
+
+  input[type="checkbox"], input[type="radio"] {
+    @apply w-auto accent-brand;
+  }
+
+  /* O <dialog> nativo vem branco por padrão; sem isto o modal fura o tema.
+     O `m-auto` não é decorativo: o preflight do Tailwind zera a margem de todo
+     elemento, e é o `margin: auto` do user-agent que centraliza um dialog
+     modal. Sem ele o modal cola no canto e o clique no backdrop não funciona. */
+  dialog {
+    @apply m-auto bg-surface text-ink border border-hairline rounded-2xl p-0 shadow-2xl
+           w-[92vw] max-w-2xl;
+  }
+
+  dialog::backdrop {
+    background: rgb(0 0 0 / 0.65);
+    backdrop-filter: blur(2px);
+  }
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-medium
+         transition-colors focus:outline-none focus:ring-2 focus:ring-brand/60;
+}
+
+@layer components {
+  .card {
+    @apply bg-surface border border-hairline rounded-2xl p-5;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand text-white hover:bg-brand/90;
+  }
+
+  .btn-ghost {
+    @apply btn border border-hairline text-muted hover:text-ink hover:border-muted;
+  }
+
+  .label {
+    @apply block text-sm text-muted mb-1.5;
+  }
+
+  .field-error {
+    @apply text-expense text-sm mt-1;
+  }
+}

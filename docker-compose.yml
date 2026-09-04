@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: denfis-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: denfis
+      POSTGRES_PASSWORD: denfis
+      POSTGRES_DB: denfis_development
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      # A imagem 18+ quer o mount na raiz e cria o subdiretório da versão
+      # dentro dela; apontar para /data como nas imagens <=17 faz o container
+      # abortar no boot.
+      - denfis-pg:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U denfis"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  denfis-pg:

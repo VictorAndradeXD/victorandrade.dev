@@ -1,0 +1,60 @@
+<ul class="divide-y divide-hairline">
+  <% transactions.each do |transaction| %>
+    <li class="py-3 first:pt-0 last:pb-0">
+      <div class="flex items-center gap-3">
+        <div class="min-w-0 flex-1">
+          <%# turbo_frame _top porque esta lista também é usada dentro do modal do dia. %>
+          <p class="truncate font-medium">
+            <%= link_to transaction.description, transaction, data: { turbo_frame: "_top" },
+                  class: "hover:text-brand transition-colors" %>
+          </p>
+          <p class="text-xs text-muted mt-0.5 flex items-center gap-2 flex-wrap">
+            <span><%= l transaction.occurred_on, format: "%d/%m/%Y" %></span>
+            <span>·</span>
+            <span><%= transaction.account.name %></span>
+            <% if transaction.tag %>
+              <span>·</span>
+              <span class="inline-flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full" style="background: <%= transaction.tag.color %>"></span>
+                <%= transaction.tag.name %>
+              </span>
+            <% end %>
+          </p>
+        </div>
+
+        <span class="tabular-nums font-medium <%= amount_color(transaction.signed_amount) %>">
+          <%= money(transaction.signed_amount, signed: true) %>
+        </span>
+
+        <div class="flex items-center gap-1 shrink-0">
+          <%= link_to action_icon(:eye), transaction, data: { turbo_frame: "_top" },
+                class: icon_button_classes, title: "Ver", aria: { label: "Ver lançamento" } %>
+          <%= link_to action_icon(:pencil), edit_transaction_path(transaction), data: { turbo_frame: "_top" },
+                class: icon_button_classes, title: "Editar", aria: { label: "Editar lançamento" } %>
+          <%= button_to transaction, method: :delete, class: icon_button_classes(:danger),
+                title: "Excluir", aria: { label: "Excluir lançamento" },
+                form: { data: { turbo_confirm: "Excluir este lançamento?" } } do %>
+            <%= action_icon(:trash) %>
+          <% end %>
+        </div>
+      </div>
+
+      <% if transaction.items.any? %>
+        <ul class="mt-2 ml-3 pl-3 border-l border-hairline space-y-1">
+          <% transaction.items.each do |item| %>
+            <li class="flex items-center justify-between text-xs text-muted">
+              <span class="truncate"><%= item.description %></span>
+              <span class="tabular-nums"><%= money(item.amount) %></span>
+            </li>
+          <% end %>
+          <% if transaction.undescribed_amount.positive? %>
+            <li class="flex items-center justify-between text-xs text-muted/70 italic">
+              <span>sem descrição</span>
+              <span class="tabular-nums"><%= money(transaction.undescribed_amount) %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </li>
+  <% end %>
+</ul>

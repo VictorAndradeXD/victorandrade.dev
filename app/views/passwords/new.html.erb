@@ -1,0 +1,22 @@
+<% content_for :title, "Recuperar senha" %>
+
+<div class="mx-auto max-w-sm mt-16">
+  <h1 class="text-2xl font-semibold tracking-tight mb-1">Esqueceu a senha?</h1>
+  <p class="text-muted text-sm mb-6">Enviamos as instruções por e-mail.</p>
+
+  <div class="card">
+    <%= form_with url: passwords_path, class: "space-y-5" do |form| %>
+      <div>
+        <%= form.label :email_address, "E-mail", class: "label" %>
+        <%= form.email_field :email_address, required: true, autofocus: true,
+              autocomplete: "username", value: params[:email_address] %>
+      </div>
+
+      <%= form.submit "Enviar instruções", class: "btn-primary w-full" %>
+    <% end %>
+  </div>
+
+  <p class="text-center mt-5">
+    <%= link_to "Voltar para o login", new_session_path, class: "text-sm text-muted hover:text-ink" %>
+  </p>
+</div>

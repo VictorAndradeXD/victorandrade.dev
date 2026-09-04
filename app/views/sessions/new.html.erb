@@ -1,0 +1,30 @@
+<% content_for :title, "Entrar" %>
+
+<div class="mx-auto max-w-sm mt-16">
+  <div class="text-center mb-8">
+    <p class="text-3xl mb-2 text-brand">◆</p>
+    <h1 class="text-2xl font-semibold tracking-tight">Denfis</h1>
+    <p class="text-muted text-sm mt-1">Entre para ver suas finanças.</p>
+  </div>
+
+  <div class="card">
+    <%= form_with url: session_url, class: "space-y-5" do |form| %>
+      <div>
+        <%= form.label :email_address, "E-mail", class: "label" %>
+        <%= form.email_field :email_address, required: true, autofocus: true,
+              autocomplete: "username", value: params[:email_address] %>
+      </div>
+
+      <div>
+        <%= form.label :password, "Senha", class: "label" %>
+        <%= form.password_field :password, required: true, autocomplete: "current-password", maxlength: 72 %>
+      </div>
+
+      <%= form.submit "Entrar", class: "btn-primary w-full" %>
+    <% end %>
+  </div>
+
+  <p class="text-center mt-5">
+    <%= link_to "Esqueci minha senha", new_password_path, class: "text-sm text-muted hover:text-ink" %>
+  </p>
+</div>

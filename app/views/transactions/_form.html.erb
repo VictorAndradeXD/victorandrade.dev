@@ -1,0 +1,88 @@
+<%= form_with model: transaction, class: "space-y-6",
+      data: { controller: "nested-items", action: "input->nested-items#recalculate" } do |form| %>
+
+  <% if transaction.errors.any? %>
+    <div class="rounded-lg border border-expense/30 bg-expense/10 px-4 py-3">
+      <p class="text-expense font-medium mb-1"><%= pluralize(transaction.errors.count, "erro") %> impediram o salvamento:</p>
+      <ul class="text-sm text-expense/90 list-disc list-inside">
+        <% transaction.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="card space-y-5">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <%= form.label :kind, "Tipo", class: "label" %>
+        <%= form.select :kind, [ [ "Saída", "expense" ], [ "Entrada", "income" ] ] %>
+      </div>
+
+      <div>
+        <%= form.label :occurred_on, "Data", class: "label" %>
+        <%= form.date_field :occurred_on %>
+      </div>
+    </div>
+
+    <div>
+      <%= form.label :description, "Descrição", class: "label" %>
+      <%= form.text_field :description, placeholder: "Cartão Nubank", autofocus: true %>
+    </div>
+
+    <div class="grid gap-4 <%= account_selector_visible? ? "sm:grid-cols-3" : "sm:grid-cols-2" %>">
+      <%= render "shared/money_field", form: form, field: :amount, placeholder: "3000.00",
+            data: { nested_items_target: "amount" } %>
+
+      <%= render "shared/account_field", form: form %>
+
+      <div>
+        <%= form.label :tag_id, "Tag", class: "label" %>
+        <%= form.collection_select :tag_id, current_user.tags.order(:name), :id, :name,
+              { include_blank: "Sem tag" } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="card space-y-4">
+    <div>
+      <h2 class="font-medium">Detalhamento <span class="text-muted font-normal">(opcional)</span></h2>
+      <p class="text-muted text-sm mt-1">
+        Quebre o valor em partes — "gasolina R$ 1.000" dentro de um cartão de R$ 3.000.
+        A soma das partes nunca pode passar do valor do lançamento.
+      </p>
+    </div>
+
+    <div data-nested-items-target="list" class="space-y-3">
+      <%= form.fields_for :items do |item_form| %>
+        <%= render "transactions/item_fields", form: item_form %>
+      <% end %>
+    </div>
+
+    <template data-nested-items-target="template">
+      <%= form.fields_for :items, TransactionItem.new, child_index: "NEW_RECORD" do |item_form| %>
+        <%= render "transactions/item_fields", form: item_form %>
+      <% end %>
+    </template>
+
+    <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+      <button type="button" class="btn-ghost text-sm" data-action="nested-items#add">+ Adicionar parte</button>
+
+      <p class="text-sm text-muted">
+        Sem descrição:
+        <span class="text-ink font-medium tabular-nums" data-nested-items-target="remainder">
+          <%= money(transaction.undescribed_amount) %>
+        </span>
+      </p>
+    </div>
+
+    <p class="field-error" data-nested-items-target="warning" hidden>
+      O detalhamento passou do valor do lançamento.
+    </p>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <%= form.submit transaction.persisted? ? "Salvar" : "Criar lançamento", class: "btn-primary" %>
+    <%= link_to "Cancelar", transactions_path, class: "btn-ghost" %>
+  </div>
+<% end %>

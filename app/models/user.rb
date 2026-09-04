@@ -16,11 +16,15 @@ class User < ApplicationRecord
   has_many :sessions, dependent: :destroy
 
   # Cada usuário tem a própria gestão financeira: nada é compartilhado.
+  #
+  # A ordem importa: o Rails destrói os dependentes na ordem de declaração, e
+  # Account tem `restrict_with_error` enquanto sobrar lançamento. Com accounts
+  # antes de transactions, apagar um usuário com histórico falharia calado.
+  has_many :transactions,      dependent: :destroy
+  has_many :installment_plans, dependent: :destroy
+  has_many :recurring_rules,   dependent: :destroy
   has_many :accounts,          dependent: :destroy
   has_many :tags,              dependent: :destroy
-  has_many :transactions,      dependent: :destroy
-  has_many :recurring_rules,   dependent: :destroy
-  has_many :installment_plans, dependent: :destroy
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 
@@ -73,6 +77,18 @@ class User < ApplicationRecord
       register_failure!
       nil
     end
+  end
+
+  # O has_secure_password definia estes três por trás dos panos; o
+  # PasswordsController e o PasswordsMailer dependem deles.
+  def password_reset_token = generate_token_for(:password_reset)
+
+  def self.find_by_password_reset_token(token)
+    find_by_token_for(:password_reset, token)
+  end
+
+  def self.find_by_password_reset_token!(token)
+    find_by_token_for!(:password_reset, token)
   end
 
   def locked? = locked_until.present? && locked_until.future?

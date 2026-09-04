@@ -1,4 +1,9 @@
-<% password_digest = BCrypt::Password.create("password") %>
+<%#
+  Custo mínimo de propósito: os parâmetros do Argon2 ficam gravados no próprio
+  digest, então a verificação continua funcionando, e a suíte não paga 200ms de
+  hash por fixture a cada execução.
+%>
+<% password_digest = Argon2::Password.new(t_cost: 1, m_cost: 10, p_cost: 1).create("password") %>
 
 one:
   email_address: one@example.com

@@ -1,3 +1,8 @@
+# Nome do projeto fixado de propósito. Sem isto ele vem do nome da pasta, e
+# renomear o diretório faria o compose procurar um volume novo — o banco
+# existente (denfis_denfis-pg) viraria órfão e pareceria perdido.
+name: denfis
+
 services:
   postgres:
     image: postgres:18

@@ -16,19 +16,44 @@ module PublicLocale
     def locale_switchable? = true
 
     def switch_locale(&)
+      # A resposta passa a depender do Accept-Language de quem pediu. Sem o
+      # Vary, um proxy ou CDN guardaria a versão em português e a serviria para
+      # o próximo visitante, que pediu em inglês.
+      response.headers["Vary"] = [ response.headers["Vary"], "Accept-Language" ].compact_blank.join(", ")
+
       I18n.with_locale(requested_locale, &)
     end
 
-    # Prioridade: o que o visitante acabou de clicar, o que ele escolheu antes,
-    # e por fim inglês — o alvo declarado do portfólio é vaga internacional.
+    # Nesta ordem: o que a pessoa acabou de clicar, o que ela escolheu numa
+    # visita anterior, o idioma do navegador dela e, por fim, inglês. A escolha
+    # explícita sempre ganha do palpite automático.
     def requested_locale
-      chosen = Portfolio::LOCALES.find { |l| l == params[:locale] }
-
-      if chosen
+      if (chosen = supported_locale(params[:locale]))
         cookies.permanent[:locale] = chosen
         return chosen
       end
 
-      Portfolio::LOCALES.find { |l| l == cookies[:locale] } || "en"
+      supported_locale(cookies[:locale]) || browser_locale || "en"
+    end
+
+    def supported_locale(value)
+      Portfolio::LOCALES.find { |locale| locale == value }
+    end
+
+    # Lê o "Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8" que o navegador manda.
+    #
+    # A comparação é só pela subtag primária, então pt-PT e pt-AO também caem no
+    # pt-BR: ler em português de outro país é melhor do que cair no inglês. E a
+    # ordem que vale é a do q=, não a da posição na lista.
+    def browser_locale
+      request.get_header("HTTP_ACCEPT_LANGUAGE").to_s.split(",").filter_map { |entry|
+        tag, quality = entry.split(";q=")
+        tag = tag.to_s.strip.downcase
+        next if tag.empty? || tag == "*"
+
+        [ tag.split("-").first, quality ? quality.to_f : 1.0 ]
+      }.sort_by { |_, quality| -quality }
+       .filter_map { |language, _| Portfolio::LOCALES.find { |l| l.split("-").first.downcase == language } }
+       .first
     end
 end

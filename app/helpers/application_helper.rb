@@ -32,6 +32,40 @@ module ApplicationHelper
     "#{I18n.t('date.month_names')[date.month]} #{date.year}"
   end
 
+  # Marca do portfólio: monograma em caixa, para não repetir o losango que já
+  # identifica o Denfis. `text-canvas` e não `text-white` porque o brand muda de
+  # tom entre os temas — o canvas é o único que contrasta nos dois.
+  def brand_mark
+    tag.span "JV",
+      class: "inline-flex items-center justify-center w-7 h-7 rounded-lg bg-brand " \
+             "text-canvas text-xs font-bold tracking-tight shrink-0",
+      aria: { hidden: true }
+  end
+
+  # Bandeiras do seletor de idioma. SVG inline em vez de emoji porque emoji de
+  # bandeira não renderiza no Chrome do Windows: sai como as letras "BR"/"US".
+  def flag_icon(locale)
+    body = locale == "pt-BR" ? brazil_flag_body : usa_flag_body
+
+    attrs = 'viewBox="0 0 28 20" class="w-5 h-[0.9rem] rounded-[2px] block" aria-hidden="true"'
+    "<svg #{attrs}>#{body}</svg>".html_safe
+  end
+
+  # Menu do site público. Separado do nav_link_to do Denfis porque aqui os
+  # destinos são âncoras (/#work): o current_page? do Rails ignora o fragmento,
+  # então todas elas acenderiam ao mesmo tempo na home.
+  def site_link_to(name, path)
+    active = path.exclude?("#") && current_page?(path)
+    classes = active ? "text-ink bg-elevated" : "text-muted hover:text-ink"
+    link_to name, path, class: "px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap #{classes}"
+  end
+
+  # O botão do currículo só aparece com o PDF de fato em public/, para não
+  # deixar um link quebrado no ar.
+  def resume_available?
+    Rails.root.join("public", Portfolio::RESUME_PATH.delete_prefix("/")).exist?
+  end
+
   # Link de navegação que se destaca na seção ativa.
   def nav_link_to(name, path)
     classes = current_page?(path) ? "text-ink bg-elevated" : "text-muted hover:text-ink"
@@ -85,4 +119,34 @@ module ApplicationHelper
     hover = tone == :danger ? "hover:text-expense" : "hover:text-ink"
     "text-muted #{hover} transition-colors p-1.5 rounded-lg hover:bg-elevated"
   end
+
+  private
+    def brazil_flag_body
+      <<~SVG
+        <rect width="28" height="20" fill="#009C3B"/>
+        <path d="M14 2.6 25.4 10 14 17.4 2.6 10Z" fill="#FFDF00"/>
+        <circle cx="14" cy="10" r="4.4" fill="#002776"/>
+      SVG
+    end
+
+    def usa_flag_body
+      stripe = 20.0 / 13
+      # Sete faixas vermelhas sobre o fundo branco: 0, 2, 4... é o desenho real.
+      stripes = (0..12).step(2).map do |i|
+        %(<rect y="#{(i * stripe).round(3)}" width="28" height="#{stripe.round(3)}" fill="#B22234"/>)
+      end.join
+
+      canton_h = (stripe * 7).round(3)
+      # Nove estrelas em grade: no tamanho que a bandeira é exibida, as 50 reais
+      # viram um borrão cinza.
+      stars = [ 1.6, 4.0, 6.4, 8.8 ].each_with_index.flat_map do |x, col|
+        [ 2.2, 5.4, 8.6 ].each_with_index.map do |y, row|
+          next if (col + row).odd?
+          %(<circle cx="#{x}" cy="#{y}" r="0.62" fill="#FFFFFF"/>)
+        end
+      end.compact.join
+
+      %(<rect width="28" height="20" fill="#FFFFFF"/>#{stripes}) +
+        %(<rect width="11.2" height="#{canton_h}" fill="#3C3B6E"/>#{stars})
+    end
 end

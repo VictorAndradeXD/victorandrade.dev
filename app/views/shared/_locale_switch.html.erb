@@ -1,0 +1,16 @@
+<%# Seletor de idioma. `url_for(locale:)` mantém a página atual e só troca o
+    parâmetro, então a escolha vale igual na home, no blog e no contábil. %>
+<div class="flex items-center gap-0.5 rounded-lg border border-hairline p-0.5"
+     role="group" aria-label="<%= t('portfolio.nav.language') %>">
+  <% Portfolio::LOCALES.each do |locale| %>
+    <% active = I18n.locale.to_s == locale %>
+    <%= link_to url_for(locale: locale),
+                title: t("portfolio.nav.#{locale == 'pt-BR' ? 'switch_to_pt' : 'switch_to_en'}"),
+                aria: { label: t("portfolio.nav.#{locale == 'pt-BR' ? 'switch_to_pt' : 'switch_to_en'}"),
+                        current: active.presence && "true" },
+                class: "flex items-center rounded-md p-1 transition " \
+                       "#{active ? 'bg-elevated' : 'grayscale opacity-50 hover:grayscale-0 hover:opacity-100'}" do %>
+      <%= flag_icon(locale) %>
+    <% end %>
+  <% end %>
+</div>

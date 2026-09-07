@@ -121,6 +121,14 @@
     @apply bg-canvas text-ink font-sans antialiased;
   }
 
+  /* Âncoras do portfólio deslizam em vez de saltar — menos para quem pediu
+     menos movimento no sistema. */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
   /* Só campos de entrada. Sem o :not, o `w-full` pegaria também os
      input[type=submit] e esticaria todo botão de formulário pela linha
      inteira, por cima do .btn-primary (que não define largura). */
@@ -158,6 +166,15 @@
 @layer components {
   .card {
     @apply bg-surface border border-hairline rounded-2xl p-5;
+  }
+
+  /* Brilho difuso atrás do hero do portfólio. Em CSS puro, e não como utility
+     arbitrária, porque depende das mesmas variáveis de tema — assim ele
+     acompanha a troca de claro/escuro sem recompilar. */
+  .hero-glow {
+    background:
+      radial-gradient(60rem 28rem at 12% -10%, color-mix(in oklab, var(--brand) 16%, transparent), transparent 70%),
+      linear-gradient(to bottom, var(--surface), var(--canvas));
   }
 
   .btn-primary {

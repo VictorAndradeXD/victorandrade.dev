@@ -1,0 +1,124 @@
+en:
+  portfolio:
+    nav:
+      work: Work
+      experience: Experience
+      stack: Stack
+      blog: Blog
+      contact: Contact
+      toggle_theme: Toggle theme
+      language: Language
+      switch_to_pt: Ver em português
+      switch_to_en: View in English
+      home: Home
+
+    profile:
+      name: João Victor Andrade
+      full_name: João Victor Santos Andrade Veloso
+      role: Backend / Full-Stack Engineer
+      available: Open to remote roles
+      headline: I build payments-heavy, multi-tenant backends — and the integrations that keep them honest.
+      blurb: >-
+        Four years shipping REST APIs, billing flows and production LLM agents in Java/Spring Boot,
+        NestJS and Rails. I own features end to end: schema, workers, deploy and the monitoring that
+        tells me when I got it wrong.
+      based_in_label: Based in
+      based_in: Teresina, Brazil
+      timezone_label: Time zone
+      timezone: GMT-3 · full US overlap
+      languages_label: Languages
+      languages: English (fluent) · Portuguese (native) · Spanish (intermediate)
+
+    actions:
+      get_in_touch: Get in touch
+      resume: Résumé (PDF)
+
+    work:
+      title: Selected work
+      note: Three projects, in depth
+
+    projects:
+      konverta:
+        name: Konverta
+        kind: Software Engineer (Contract) · Sep 2025 – Present
+        summary: Multi-tenant CRM and WhatsApp/AI automation platform for the Brazilian fitness industry, running 30+ live gym tenants.
+        highlights:
+          - Own delivery end to end — CRM pipelines, automation engine, staged dunning and analytics — across a NestJS backend and a React + Vite frontend.
+          - BullMQ cron/worker pipelines with concurrency gating, missed-run detection and dedupe locks; multi-tenant SQL with a mandatory dry-run before any write.
+          - Asaas billing behind Redis distributed locks, plus WhatsApp providers, Meta Graph, Google Calendar and Auth0.
+          - "Production LLM SDR agents: prompt design, evaluation across the GPT-4.1/5.1 family, and guardrails against prompt leakage."
+          - Encryption at rest for tenant access tokens (AES-256-GCM + argon2id) and read-only production diagnostics.
+      feirinha:
+        name: Feirinha Verde
+        kind: Full-Stack Developer (Contract) · May – Aug 2026
+        summary: Fair and event management platform with paid space sales — exhibitor registration, stand and seat map, online checkout and an admin panel. Delivered end to end.
+        highlights:
+          - Java 21 + Spring Boot 4 REST API with Spring Data JPA and Bean Validation; auth via Spring Security + JWT and Bucket4j rate limiting.
+          - Asaas checkout and webhooks driving seat and reservation control, on PostgreSQL with versioned Flyway migrations.
+          - S3-compatible object storage (Cloudflare R2), transactional email, PDF/CSV reporting and OpenAPI docs.
+          - "Test discipline: JUnit 5, Testcontainers, ArchUnit, REST Assured, Gatling load tests and JaCoCo coverage, gated in GitHub Actions."
+          - Angular 21 SPA with standalone components and Playwright end-to-end coverage.
+      denfis:
+        name: Denfis
+        kind: Personal project · Open source (MIT)
+        summary: A dark-first personal finance manager on Rails 8 — and one module of the site you are reading right now.
+        highlights:
+          - Card statements modeled as a parent transaction broken into detail lines, with the remainder left undescribed and the sum constrained to never exceed the parent.
+          - Recurring rules and installment plans, a per-day balance calendar and a printable statement with its own print stylesheet.
+          - Rails 8 with Hotwire and import maps — no build step for JavaScript — over PostgreSQL, with Argon2id password hashing.
+          - Runtime theming through CSS custom properties, so dark and light swap without recompiling Tailwind.
+
+    experience:
+      title: Experience
+      education_label: Education
+      jobs:
+        - role: Software Engineer (Contract)
+          org: Konverta
+          period: Sep 2025 – Present
+          place: Remote
+          note: Multi-tenant CRM + WhatsApp/AI automation for 30+ gym tenants.
+        - role: Full-Stack Developer (Contract)
+          org: Feirinha Verde
+          period: May – Aug 2026
+          place: Remote
+          note: Event platform with paid space sales and online checkout.
+        - role: IT Coordinator (Part-time)
+          org: Timon City Hall
+          period: Jan 2025 – Jan 2026
+          place: Timon, MA
+          note: Led a technician team; Laravel warehouse app; Ubuntu + Docker infra with Grafana/Prometheus.
+        - role: Java Junior Developer
+          org: Workset
+          period: Sep 2022 – May 2024
+          place: Teresina, PI
+          note: Convite.in platform in Java 8/MySQL; PagSeguro payments integration.
+        - role: Ruby on Rails Trainee (Part-time)
+          org: Court of Justice of Piauí
+          period: Jul 2021 – Jan 2023
+          place: Teresina, PI
+          note: Public-servant management system including eSocial; RSpec and Selenium coverage.
+      education:
+        degree: B.Sc. Computer Science
+        org: Federal University of Piauí (UFPI)
+        period: 2019 – Mar 2025
+        note: "Thesis: an AI transcription and summarization desktop app (Electron, Whisper, T5, LexRank)."
+
+    stack:
+      title: Stack
+      groups:
+        backend: Backend
+        frontend: Frontend
+        data: Data
+        cloud: Cloud & DevOps
+        ai: AI
+        testing: Testing
+
+    contact:
+      title: Let's talk
+      body: >-
+        I'm open to remote roles with international teams and comfortable across US time zones.
+        The fastest way to reach me is email — I answer within a day.
+
+    # Blog e módulo contábil não entram aqui: são só em português, então o
+    # conteúdo deles vive apenas em portfolio.pt-BR.yml. O que sobra em comum
+    # é o rótulo "Blog" do menu, logo acima em portfolio.nav.

@@ -2,29 +2,8 @@
 <html lang="pt-BR">
   <head>
     <title><%= content_for(:title) || "Denfis" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="theme-color" content="#0b0f14">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="Denfis">
-    <meta name="mobile-web-app-capable" content="yes">
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
-
-    <%= yield :head %>
-
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
-
-    <%# Antes do CSS: sem isto a página pisca escura ao carregar no modo claro. %>
-    <script>
-      try {
-        if (localStorage.getItem("theme") === "light") document.documentElement.dataset.theme = "light"
-      } catch (e) {}
-    </script>
-
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
-    <%= javascript_importmap_tags %>
+    <%= render "shared/head" %>
   </head>
 
   <body class="min-h-screen">
@@ -33,13 +12,13 @@
         <%# Em tela estreita os links descem para a própria linha e rolam na
             horizontal; a partir de sm tudo cabe numa linha só. %>
         <nav class="mx-auto max-w-7xl px-5 py-2.5 flex flex-wrap items-center gap-x-6 gap-y-2 lg:h-14 lg:py-0 lg:flex-nowrap">
-          <%= link_to root_path, class: "font-semibold tracking-tight text-ink" do %>
+          <%= link_to denfis_root_path, class: "font-semibold tracking-tight text-ink" do %>
             <span class="text-brand">◆</span> Denfis
           <% end %>
 
           <div class="order-last w-full overflow-x-auto flex items-center gap-1 text-sm
                       lg:order-none lg:w-auto lg:overflow-visible">
-            <%= nav_link_to "Visão geral", root_path %>
+            <%= nav_link_to "Visão geral", denfis_root_path %>
             <%= nav_link_to "Lançamentos", transactions_path %>
             <%= nav_link_to "Extrato", statement_path %>
             <%= nav_link_to "Contas", accounts_path %>

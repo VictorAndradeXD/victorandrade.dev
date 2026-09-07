@@ -1,0 +1,10 @@
+<% content_for :title, "#{t('portfolio.accounting.title')} — #{t('portfolio.profile.name')}" %>
+
+<section class="mx-auto max-w-5xl px-5 py-24">
+  <h1 class="text-3xl font-semibold tracking-tight text-ink"><%= t("portfolio.accounting.title") %></h1>
+  <p class="mt-4 max-w-2xl text-muted leading-relaxed"><%= t("portfolio.accounting.body_html") %></p>
+
+  <p class="mt-8">
+    <%= link_to t("portfolio.accounting.back"), root_path, class: "text-brand hover:underline underline-offset-4" %>
+  </p>
+</section>

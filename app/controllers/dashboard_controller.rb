@@ -26,7 +26,7 @@ class DashboardController < ApplicationController
       .includes(:account, :tag, :items)
     @net = @transactions.sum(&:signed_amount)
   rescue Date::Error
-    redirect_to root_path
+    redirect_to denfis_root_path
   end
 
   private

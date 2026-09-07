@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="<%= I18n.locale %>">
+  <head>
+    <title><%= content_for(:title) || "#{t('portfolio.profile.name')} — #{t('portfolio.profile.role')}" %></title>
+    <meta name="description" content="<%= content_for(:description) || t('portfolio.profile.headline') %>">
+    <meta name="application-name" content="<%= t('portfolio.profile.name') %>">
+    <%= render "shared/head" %>
+  </head>
+
+  <body class="min-h-screen flex flex-col">
+    <header class="border-b border-hairline bg-canvas/80 backdrop-blur sticky top-0 z-20">
+      <nav class="mx-auto max-w-5xl px-5 h-14 flex items-center gap-4 sm:gap-6">
+        <%= link_to root_path, class: "flex items-center gap-2 font-semibold tracking-tight text-ink shrink-0" do %>
+          <%= brand_mark %>
+          <span class="hidden sm:inline">João Victor</span>
+        <% end %>
+
+        <%# Âncoras sempre absolutas (/#work): assim o mesmo menu funciona no
+            blog e no módulo contábil, que não têm essas seções. %>
+        <div class="flex items-center gap-1 text-sm overflow-x-auto">
+          <%= site_link_to t("portfolio.nav.work"),       root_path(anchor: "work") %>
+          <%= site_link_to t("portfolio.nav.experience"), root_path(anchor: "experience") %>
+          <%= site_link_to t("portfolio.nav.stack"),      root_path(anchor: "stack") %>
+          <%# Blog escondido do menu até ter post. A rota /blog e a página
+              seguem de pé — é só descomentar esta linha para reativar. %>
+          <%#= site_link_to t("portfolio.nav.blog"), blog_path %>
+        </div>
+
+        <div class="ml-auto flex items-center gap-2 shrink-0">
+          <% if locale_switchable? %>
+            <%= render "shared/locale_switch" %>
+          <% end %>
+
+          <button type="button" data-controller="theme" data-action="theme#toggle"
+                  class="btn-ghost text-sm px-2.5" aria-label="<%= t('portfolio.nav.toggle_theme') %>">
+            <span data-theme-target="icon">☀</span>
+          </button>
+
+          <%= link_to t("portfolio.nav.contact"), root_path(anchor: "contact"),
+                      class: "btn-primary text-sm hidden sm:inline-flex" %>
+        </div>
+      </nav>
+    </header>
+
+    <main class="flex-1">
+      <%= yield %>
+    </main>
+
+    <footer class="border-t border-hairline mt-24">
+      <div class="mx-auto max-w-5xl px-5 py-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div class="text-sm text-muted">
+          <p class="text-ink font-medium"><%= t("portfolio.profile.full_name") %></p>
+          <p class="mt-1"><%= t("portfolio.profile.based_in") %> · <%= t("portfolio.profile.timezone") %></p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+          <%= link_to "GitHub",   Portfolio::LINKS[:github],   class: "text-muted hover:text-ink transition-colors", rel: "me noopener", target: "_blank" %>
+          <%= link_to "LinkedIn", Portfolio::LINKS[:linkedin], class: "text-muted hover:text-ink transition-colors", rel: "me noopener", target: "_blank" %>
+          <%= link_to "Denfis",   denfis_root_path,            class: "text-muted hover:text-ink transition-colors" %>
+          <%= link_to "Contábil", contabil_path,               class: "text-muted hover:text-ink transition-colors" %>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,130 @@
+pt-BR:
+  portfolio:
+    nav:
+      work: Projetos
+      experience: Experiência
+      stack: Stack
+      blog: Blog
+      contact: Contato
+      toggle_theme: Alternar tema
+      language: Idioma
+      switch_to_pt: Ver em português
+      switch_to_en: View in English
+      home: Início
+
+    profile:
+      name: João Victor Andrade
+      full_name: João Victor Santos Andrade Veloso
+      role: Desenvolvedor Backend / Full-Stack
+      available: Aberto a vagas remotas
+      headline: Construo backends multi-tenant com pagamento no meio — e as integrações que fazem a conta fechar.
+      blurb: >-
+        Quatro anos entregando APIs REST, fluxos de cobrança e agentes LLM em produção com
+        Java/Spring Boot, NestJS e Rails. Levo a feature de ponta a ponta: schema, workers, deploy
+        e o monitoramento que me avisa quando eu errei.
+      based_in_label: Onde estou
+      based_in: Teresina, Brasil
+      timezone_label: Fuso
+      timezone: GMT-3 · sobreposição total com os EUA
+      languages_label: Idiomas
+      languages: Inglês (fluente) · Português (nativo) · Espanhol (intermediário)
+
+    actions:
+      get_in_touch: Fale comigo
+      resume: Currículo (PDF)
+
+    work:
+      title: Trabalhos selecionados
+      note: Três projetos, em profundidade
+
+    projects:
+      konverta:
+        name: Konverta
+        kind: Engenheiro de Software (Contrato) · Set 2025 – Atual
+        summary: Plataforma multi-tenant de CRM e automação por WhatsApp/IA para o setor fitness brasileiro, rodando com mais de 30 academias ativas.
+        highlights:
+          - Entrega de ponta a ponta — pipelines de CRM, motor de automação, régua de cobrança e analytics — entre um backend NestJS e um frontend React + Vite.
+          - Pipelines de cron e workers com BullMQ, com controle de concorrência, detecção de execução perdida e locks de dedupe; SQL multi-tenant com dry-run obrigatório antes de qualquer escrita.
+          - Cobrança via Asaas protegida por locks distribuídos no Redis, além de provedores de WhatsApp, Meta Graph, Google Calendar e Auth0.
+          - "Agentes LLM de SDR em produção: desenho de prompts, avaliação na família GPT-4.1/5.1 e guardrails contra vazamento de prompt."
+          - Criptografia em repouso dos tokens de acesso dos tenants (AES-256-GCM + argon2id) e diagnóstico somente-leitura em produção.
+      feirinha:
+        name: Feirinha Verde
+        kind: Desenvolvedor Full-Stack (Contrato) · Mai – Ago 2026
+        summary: Plataforma de gestão de feiras e eventos com venda de espaços — cadastro de expositores, mapa de estandes e assentos, checkout online e painel administrativo. Entregue ponta a ponta.
+        highlights:
+          - API REST em Java 21 + Spring Boot 4 com Spring Data JPA e Bean Validation; autenticação com Spring Security + JWT e rate limiting com Bucket4j.
+          - Checkout e webhooks do Asaas controlando reservas e assentos, sobre PostgreSQL com migrations versionadas no Flyway.
+          - Object storage compatível com S3 (Cloudflare R2), e-mails transacionais, relatórios em PDF/CSV e documentação OpenAPI.
+          - "Disciplina de teste: JUnit 5, Testcontainers, ArchUnit, REST Assured, testes de carga com Gatling e cobertura JaCoCo, barrados no GitHub Actions."
+          - SPA em Angular 21 com standalone components e cobertura ponta a ponta com Playwright.
+      denfis:
+        name: Denfis
+        kind: Projeto pessoal · Código aberto (MIT)
+        summary: Um gerenciador de finanças pessoais dark-first em Rails 8 — e um dos módulos do site que você está lendo agora.
+        highlights:
+          - Fatura de cartão modelada como um lançamento pai quebrado em linhas de detalhe, com o restante sem descrição e a soma impedida de ultrapassar o pai.
+          - Recorrências e parcelamentos, calendário de saldo por dia e um extrato imprimível com folha de estilo própria para papel.
+          - Rails 8 com Hotwire e import maps — sem etapa de build para JavaScript — sobre PostgreSQL, com hash de senha em Argon2id.
+          - Tema trocado em tempo de execução por custom properties do CSS, então claro e escuro alternam sem recompilar o Tailwind.
+
+    experience:
+      title: Experiência
+      education_label: Formação
+      jobs:
+        - role: Engenheiro de Software (Contrato)
+          org: Konverta
+          period: Set 2025 – Atual
+          place: Remoto
+          note: CRM multi-tenant + automação por WhatsApp/IA para mais de 30 academias.
+        - role: Desenvolvedor Full-Stack (Contrato)
+          org: Feirinha Verde
+          period: Mai – Ago 2026
+          place: Remoto
+          note: Plataforma de eventos com venda de espaços e checkout online.
+        - role: Coordenador de TI (Meio período)
+          org: Prefeitura de Timon
+          period: Jan 2025 – Jan 2026
+          place: Timon, MA
+          note: Liderei equipe de técnicos; aplicação de almoxarifado em Laravel; infra Ubuntu + Docker com Grafana/Prometheus.
+        - role: Desenvolvedor Java Júnior
+          org: Workset
+          period: Set 2022 – Mai 2024
+          place: Teresina, PI
+          note: Plataforma Convite.in em Java 8/MySQL; integração de pagamentos com PagSeguro.
+        - role: Estagiário Ruby on Rails (Meio período)
+          org: Tribunal de Justiça do Piauí
+          period: Jul 2021 – Jan 2023
+          place: Teresina, PI
+          note: Sistema de gestão de servidores públicos, incluindo eSocial; cobertura com RSpec e Selenium.
+      education:
+        degree: Bacharelado em Ciência da Computação
+        org: Universidade Federal do Piauí (UFPI)
+        period: 2019 – Mar 2025
+        note: "TCC: app desktop de transcrição e sumarização com IA (Electron, Whisper, T5, LexRank)."
+
+    stack:
+      title: Stack
+      groups:
+        backend: Backend
+        frontend: Frontend
+        data: Dados
+        cloud: Cloud & DevOps
+        ai: IA
+        testing: Testes
+
+    contact:
+      title: Vamos conversar
+      body: >-
+        Estou aberto a vagas remotas com times internacionais e trabalho confortavelmente no fuso
+        dos EUA. O caminho mais rápido é o e-mail — respondo em até um dia.
+
+    blog:
+      title: Blog
+      body: Anotações sobre backend, integrações de pagamento e as coisas que só quebram em produção. Os primeiros posts estão a caminho.
+      back: Voltar ao portfólio
+
+    accounting:
+      title: Módulo contábil
+      body_html: Cálculo de pró-labore e otimização de fator R para empresas do Simples Nacional. Em construção — as regras de negócio já estão levantadas em <code class="text-ink/90">docs/prolabore/regras-fiscais.md</code>.
+      back: Voltar ao portfólio

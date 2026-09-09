@@ -1,10 +1,15 @@
 <% content_for :title, "Entrar" %>
 
+<%# A identidade da tela segue o módulo que a pessoa tentou abrir. %>
+<% brand = @destination == :accounting ?
+     { mark: "%", name: "Contábil", tagline: "Entre para acessar o módulo de pró-labore." } :
+     { mark: "◆", name: "Denfis",   tagline: "Entre para ver suas finanças." } %>
+
 <div class="mx-auto max-w-sm mt-16">
   <div class="text-center mb-8">
-    <p class="text-3xl mb-2 text-brand">◆</p>
-    <h1 class="text-2xl font-semibold tracking-tight">Denfis</h1>
-    <p class="text-muted text-sm mt-1">Entre para ver suas finanças.</p>
+    <p class="text-3xl mb-2 text-brand"><%= brand[:mark] %></p>
+    <h1 class="text-2xl font-semibold tracking-tight"><%= brand[:name] %></h1>
+    <p class="text-muted text-sm mt-1"><%= brand[:tagline] %></p>
   </div>
 
   <div class="card">

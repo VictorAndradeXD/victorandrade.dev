@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_04_160001) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_09_120001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -127,7 +127,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_04_160001) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.boolean "accounting_access", default: false, null: false
     t.datetime "created_at", null: false
+    t.boolean "denfis_access", default: true, null: false
     t.string "email_address", null: false
     t.integer "failed_attempts", default: 0, null: false
     t.datetime "last_login_at"
@@ -135,6 +137,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_04_160001) do
     t.string "password_digest", null: false
     t.datetime "updated_at", null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
+    t.check_constraint "denfis_access OR accounting_access", name: "users_has_at_least_one_module"
     t.check_constraint "failed_attempts >= 0", name: "users_failed_attempts_non_negative"
   end
 

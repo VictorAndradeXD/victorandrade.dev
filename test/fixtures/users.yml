@@ -12,3 +12,12 @@ one:
 two:
   email_address: two@example.com
   password_digest: <%= password_digest %>
+
+# A contadora não tem acesso ao Denfis, e é isso que os testes de autorização
+# verificam. Por existir esta fixture, os testes usam users(:one) em vez de
+# User.take: o take é não-determinístico e às vezes devolveria ela.
+contadora:
+  email_address: contadora@example.com
+  password_digest: <%= password_digest %>
+  denfis_access: false
+  accounting_access: true

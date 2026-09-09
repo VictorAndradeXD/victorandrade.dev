@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <title><%= content_for(:title) || "Contábil" %></title>
+    <meta name="application-name" content="Contábil">
+    <%= render "shared/head" %>
+  </head>
+
+  <body class="min-h-screen">
+    <header class="border-b border-hairline bg-surface/60 backdrop-blur sticky top-0 z-10 print:hidden">
+      <nav class="mx-auto max-w-7xl px-5 py-2.5 flex flex-wrap items-center gap-x-6 gap-y-2 lg:h-14 lg:py-0 lg:flex-nowrap">
+        <%= link_to contabil_path, class: "font-semibold tracking-tight text-ink" do %>
+          <span class="text-brand">%</span> Contábil
+        <% end %>
+
+        <div class="order-last w-full overflow-x-auto flex items-center gap-1 text-sm
+                    lg:order-none lg:w-auto lg:overflow-visible">
+          <%= nav_link_to "Visão geral", contabil_path %>
+        </div>
+
+        <div class="ml-auto flex items-center gap-3">
+          <button type="button" data-controller="theme" data-action="theme#toggle"
+                  class="btn-ghost text-sm px-2.5" aria-label="Alternar tema">
+            <span data-theme-target="icon">☀</span>
+          </button>
+          <%= button_to "Sair", session_path, method: :delete, class: "btn-ghost text-sm" %>
+        </div>
+      </nav>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-5 py-8 print:px-0 print:py-0 print:max-w-none">
+      <% if notice %>
+        <p id="notice" class="mb-5 rounded-lg border border-income/30 bg-income/10 text-income px-4 py-2.5 text-sm print:hidden"><%= notice %></p>
+      <% end %>
+      <% if alert %>
+        <p id="alert" class="mb-5 rounded-lg border border-expense/30 bg-expense/10 text-expense px-4 py-2.5 text-sm print:hidden"><%= alert %></p>
+      <% end %>
+
+      <%= yield %>
+    </main>
+  </body>
+</html>

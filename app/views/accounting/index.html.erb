@@ -1,10 +1,17 @@
-<% content_for :title, "#{t('portfolio.accounting.title')} — #{t('portfolio.profile.name')}" %>
+<% content_for :title, "Contábil" %>
 
-<section class="mx-auto max-w-5xl px-5 py-24">
-  <h1 class="text-3xl font-semibold tracking-tight text-ink"><%= t("portfolio.accounting.title") %></h1>
-  <p class="mt-4 max-w-2xl text-muted leading-relaxed"><%= t("portfolio.accounting.body_html") %></p>
+<h1 class="text-2xl font-semibold tracking-tight text-ink">Pró-labore e fator R</h1>
+<p class="mt-2 text-muted">Bem-vinda, <%= current_user.display_name %>.</p>
 
-  <p class="mt-8">
-    <%= link_to t("portfolio.accounting.back"), root_path, class: "text-brand hover:underline underline-offset-4" %>
+<div class="card mt-8 max-w-2xl">
+  <h2 class="font-medium text-ink">Em construção</h2>
+  <p class="mt-3 text-sm text-muted leading-relaxed">
+    O acesso já está de pé. O próximo passo é o motor de cálculo: tabelas dos
+    Anexos III e V, INSS e IRRF versionadas por vigência, fator R com janela
+    móvel de 12 meses e o simulador de pró-labore mínimo para fechar os 28%.
   </p>
-</section>
+  <p class="mt-3 text-sm text-muted leading-relaxed">
+    As regras que ele vai implementar estão levantadas em
+    <code class="text-ink/90">docs/prolabore/regras-fiscais.md</code>.
+  </p>
+</div>

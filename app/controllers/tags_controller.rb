@@ -1,4 +1,6 @@
 class TagsController < ApplicationController
+  before_action :require_denfis_access
+
   before_action :set_tag, only: %i[edit update destroy]
 
   def index = @tags = current_user.tags.order(:name)

@@ -1,4 +1,6 @@
 class AccountsController < ApplicationController
+  before_action :require_denfis_access
+
   before_action :set_account, only: %i[edit update destroy]
 
   def index

@@ -1,4 +1,6 @@
 class StatementsController < ApplicationController
+  before_action :require_denfis_access
+
   def show
     @starts_on = parse_date(params[:starts_on], Date.current.beginning_of_month)
     @ends_on   = parse_date(params[:ends_on], Date.current.end_of_month)

@@ -1,4 +1,6 @@
 class DashboardController < ApplicationController
+  before_action :require_denfis_access
+
   def show
     @month = parse_month
     @range = @month.all_month

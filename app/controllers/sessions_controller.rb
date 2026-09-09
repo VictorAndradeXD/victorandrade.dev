@@ -7,6 +7,7 @@ class SessionsController < ApplicationController
              with: -> { redirect_to new_session_path, alert: "Muitas tentativas. Aguarde alguns minutos." }
 
   def new
+    @destination = destination_module
   end
 
   def create
@@ -26,6 +27,19 @@ class SessionsController < ApplicationController
   end
 
   private
+    # Quem foi barrado a caminho do contábil vê a marca do contábil na tela de
+    # login. Sem isto a contadora tenta entrar no módulo dela e recebe uma tela
+    # escrita "Denfis", que parece endereço errado.
+    def destination_module
+      path = begin
+        URI.parse(session[:return_to_after_authenticating].to_s).path
+      rescue URI::InvalidURIError
+        nil
+      end
+
+      path&.start_with?(contabil_path) ? :accounting : :denfis
+    end
+
     # Conta bloqueada ganha uma mensagem própria: sem ela o dono legítimo fica
     # tentando de novo sem entender por que a senha certa não passa. O custo é
     # confirmar que aquele e-mail existe — aceitável aqui, num sistema de dois

@@ -34,8 +34,11 @@ module Authentication
       redirect_to new_session_path
     end
 
+    # O destino guardado ganha de tudo: quem tentou abrir uma página específica
+    # volta para ela. Sem destino guardado, cai no módulo que o acesso dele
+    # permite — mandar a contadora para o Denfis seria mandá-la para um erro.
     def after_authentication_url
-      session.delete(:return_to_after_authenticating) || denfis_root_url
+      session.delete(:return_to_after_authenticating) || home_path_for(Current.user)
     end
 
     def start_new_session_for(user)

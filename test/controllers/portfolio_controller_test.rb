@@ -66,19 +66,19 @@ class PortfolioControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", contabil_path,    count: 0
   end
 
-  test "the owner gets the private app shortcuts once signed in" do
-    sign_in_as User.take
+  # O rodapé oferece só o módulo que a pessoa pode abrir; o caso da contadora
+  # está em AccountingControllerTest, junto com o resto da autorização.
+  test "the Denfis owner gets the Denfis shortcut and nothing else" do
+    sign_in_as users(:one)
     get root_path
 
     assert_select "a[href=?]", denfis_root_path, count: 1
-    assert_select "a[href=?]", contabil_path,    count: 1
+    assert_select "a[href=?]", contabil_path,    count: 0
   end
 
-  test "the other modules stay in Portuguese whatever the browser asks" do
-    get blog_path,     headers: { "Accept-Language" => "en-US,en;q=0.9" }
-    assert_select "html[lang=?]", "pt-BR"
+  test "the blog stays in Portuguese whatever the browser asks" do
+    get blog_path, headers: { "Accept-Language" => "en-US,en;q=0.9" }
 
-    get contabil_path, headers: { "Accept-Language" => "en-US,en;q=0.9" }
     assert_select "html[lang=?]", "pt-BR"
   end
 end

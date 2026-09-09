@@ -5,7 +5,7 @@ class DenfisAccessFlowTest < ActionDispatch::IntegrationTest
     get denfis_root_path
     assert_redirected_to new_session_path
 
-    user = User.take
+    user = users(:one)
     post session_path, params: { email_address: user.email_address, password: "password" }
 
     assert_redirected_to denfis_root_path
@@ -15,14 +15,14 @@ class DenfisAccessFlowTest < ActionDispatch::IntegrationTest
     get transactions_path
     assert_redirected_to new_session_path
 
-    user = User.take
+    user = users(:one)
     post session_path, params: { email_address: user.email_address, password: "password" }
 
     assert_redirected_to transactions_path
   end
 
   test "logado, /denfis abre normalmente" do
-    sign_in_as User.take
+    sign_in_as users(:one)
     get denfis_root_path
 
     assert_response :success

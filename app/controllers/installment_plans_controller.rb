@@ -1,4 +1,6 @@
 class InstallmentPlansController < ApplicationController
+  before_action :require_denfis_access
+
   def index
     @plans = current_user.installment_plans.includes(:account, :tag).order(created_at: :desc)
   end

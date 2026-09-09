@@ -1,4 +1,6 @@
 class RecurringRulesController < ApplicationController
+  before_action :require_denfis_access
+
   before_action :set_rule, only: %i[edit update destroy materialize]
 
   def index = @rules = current_user.recurring_rules.includes(:account, :tag).order(:description)

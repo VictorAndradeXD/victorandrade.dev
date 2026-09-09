@@ -59,6 +59,21 @@ class PortfolioControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.headers["Vary"], "Accept-Language"
   end
 
+  test "a visitor never sees links into the private apps" do
+    get root_path
+
+    assert_select "a[href=?]", denfis_root_path, count: 0
+    assert_select "a[href=?]", contabil_path,    count: 0
+  end
+
+  test "the owner gets the private app shortcuts once signed in" do
+    sign_in_as User.take
+    get root_path
+
+    assert_select "a[href=?]", denfis_root_path, count: 1
+    assert_select "a[href=?]", contabil_path,    count: 1
+  end
+
   test "the other modules stay in Portuguese whatever the browser asks" do
     get blog_path,     headers: { "Accept-Language" => "en-US,en;q=0.9" }
     assert_select "html[lang=?]", "pt-BR"

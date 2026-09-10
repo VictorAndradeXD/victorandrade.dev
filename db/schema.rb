@@ -10,9 +10,62 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_10_120001) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_10_130001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "accounting_companies", force: :cascade do |t|
+    t.boolean "archived", default: false, null: false
+    t.string "cnpj", null: false
+    t.datetime "created_at", null: false
+    t.boolean "fator_r_eligible", default: true, null: false
+    t.string "name", null: false
+    t.date "started_on", null: false
+    t.datetime "updated_at", null: false
+    t.index ["cnpj"], name: "index_accounting_companies_on_cnpj", unique: true
+    t.check_constraint "cnpj::text ~ '^[0-9]{14}$'::text", name: "accounting_companies_cnpj_digits"
+  end
+
+  create_table "accounting_competencias", force: :cascade do |t|
+    t.bigint "company_id", null: false
+    t.datetime "created_at", null: false
+    t.decimal "gross_revenue", precision: 14, scale: 2, default: "0.0", null: false
+    t.date "month", null: false
+    t.datetime "updated_at", null: false
+    t.index ["company_id", "month"], name: "index_accounting_competencias_on_company_id_and_month", unique: true
+    t.index ["company_id"], name: "index_accounting_competencias_on_company_id"
+    t.check_constraint "EXTRACT(day FROM month) = 1::numeric", name: "accounting_competencias_month_is_first_day"
+    t.check_constraint "gross_revenue >= 0::numeric", name: "accounting_competencias_revenue_non_negative"
+  end
+
+  create_table "accounting_partners", force: :cascade do |t|
+    t.bigint "company_id", null: false
+    t.string "cpf", null: false
+    t.datetime "created_at", null: false
+    t.integer "dependents_count", default: 0, null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["company_id", "cpf"], name: "index_accounting_partners_on_company_id_and_cpf", unique: true
+    t.index ["company_id"], name: "index_accounting_partners_on_company_id"
+    t.check_constraint "cpf::text ~ '^[0-9]{11}$'::text", name: "accounting_partners_cpf_digits"
+    t.check_constraint "dependents_count >= 0", name: "accounting_partners_dependents_non_negative"
+  end
+
+  create_table "accounting_prolabores", force: :cascade do |t|
+    t.bigint "competencia_id", null: false
+    t.datetime "created_at", null: false
+    t.decimal "gross", precision: 14, scale: 2, null: false
+    t.decimal "inss", precision: 14, scale: 2, default: "0.0", null: false
+    t.decimal "irrf", precision: 14, scale: 2, default: "0.0", null: false
+    t.bigint "partner_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["competencia_id", "partner_id"], name: "index_accounting_prolabores_on_competencia_id_and_partner_id", unique: true
+    t.index ["competencia_id"], name: "index_accounting_prolabores_on_competencia_id"
+    t.index ["partner_id"], name: "index_accounting_prolabores_on_partner_id"
+    t.check_constraint "(inss + irrf) <= gross", name: "accounting_prolabores_taxes_within_gross"
+    t.check_constraint "gross > 0::numeric", name: "accounting_prolabores_gross_positive"
+    t.check_constraint "inss >= 0::numeric AND irrf >= 0::numeric", name: "accounting_prolabores_taxes_non_negative"
+  end
 
   create_table "accounts", force: :cascade do |t|
     t.boolean "archived", default: false, null: false
@@ -206,6 +259,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_10_120001) do
     t.check_constraint "failed_attempts >= 0", name: "users_failed_attempts_non_negative"
   end
 
+  add_foreign_key "accounting_competencias", "accounting_companies", column: "company_id"
+  add_foreign_key "accounting_partners", "accounting_companies", column: "company_id"
+  add_foreign_key "accounting_prolabores", "accounting_competencias", column: "competencia_id"
+  add_foreign_key "accounting_prolabores", "accounting_partners", column: "partner_id"
   add_foreign_key "accounts", "users"
   add_foreign_key "installment_plans", "accounts"
   add_foreign_key "installment_plans", "tags"

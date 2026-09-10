@@ -188,9 +188,33 @@ número. Não conhece empresa, sócio nem competência — isso vem por cima, de
 Sem tabela vigente para a data pedida, o cálculo levanta `Tax::MissingRule` em
 vez de devolver zero — número errado com cara de verdade é pior que erro.
 
-**Ainda não existe:** cadastro de empresa, sócio e competência; a janela móvel de
-12 meses alimentada por dados reais; a proporcionalização de início de atividade;
-as telas.
+O **cadastro** existe em `app/models/accounting/`:
+
+| Classe | Responsabilidade |
+|---|---|
+| `Accounting::Company` | Empresa da carteira, com CNPJ validado por dígito e data de início |
+| `Accounting::Partner` | Sócio, com CPF validado e número de dependentes |
+| `Accounting::Competencia` | Um mês de uma empresa: quanto faturou |
+| `Accounting::Prolabore` | Pró-labore de um sócio num mês, com INSS e IRRF **gravados** |
+| `Accounting::Window` | Janela móvel de 12 meses, com proporcionalização |
+
+Sem escopo por usuário, ao contrário do Denfis: lá dois usuários têm finanças
+separadas; aqui todos com acesso ao módulo trabalham sobre a mesma carteira.
+
+Duas regras da janela que o cálculo à mão costuma errar e que estão travadas por
+teste:
+
+1. **O RBT12 são os 12 meses ANTERIORES ao mês apurado**, não os 12 terminando
+   nele. Setembro/2026 olha de setembro/2025 a agosto/2026, e a receita do
+   próprio setembro fica de fora.
+2. **Empresa com menos de 12 meses proporcionaliza**: média dos meses corridos
+   vezes 12. No primeiro mês, anualiza o próprio mês. Sem isso a empresa nova
+   pareceria faturar pouco e cairia numa faixa que não é a dela.
+
+Os impostos do pró-labore ficam **gravados no lançamento**, não recalculados na
+leitura: a tabela do ano que vem não pode reescrever o que já foi recolhido.
+
+**Ainda não existe:** as telas.
 
 ### Duas aproximações que precisam de conferência
 

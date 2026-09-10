@@ -1,0 +1,13 @@
+# 2025 fechado e 2026 aberto: permite testar que a vigência é respeitada.
+inss_2025:
+  rate: 0.11
+  ceiling: 8157.41
+  minimum_wage: 1518.00
+  valid_from: 2025-01-01
+  valid_to: 2025-12-31
+
+inss_2026:
+  rate: 0.11
+  ceiling: 8157.41
+  minimum_wage: 1518.00
+  valid_from: 2026-01-01

@@ -41,3 +41,7 @@ user.accounts.find_or_create_by!(name: "Carteira") do |account|
 end
 
 puts "#{user.tags.count} tag(s) e #{user.accounts.count} conta(s) prontas."
+
+# Tabelas fiscais do módulo contábil, em arquivo próprio porque têm dono
+# diferente: quem confere esses números é a contadora, não quem mexe no Denfis.
+load Rails.root.join("db/seeds/tax_tables.rb")

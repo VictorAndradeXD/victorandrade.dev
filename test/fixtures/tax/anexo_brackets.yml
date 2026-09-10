@@ -1,0 +1,98 @@
+# Faixas dos Anexos III e V. Espelham db/seeds/tax_tables.rb: se um mudar,
+# o outro muda junto, senão os testes passam a validar uma tabela que não existe.
+
+iii_1:
+  anexo: III
+  rbt12_from: 0
+  rbt12_to: 180000
+  rate: 0.06
+  deduction: 0
+  valid_from: 2018-01-01
+
+iii_2:
+  anexo: III
+  rbt12_from: 180000.01
+  rbt12_to: 360000
+  rate: 0.112
+  deduction: 9360
+  valid_from: 2018-01-01
+
+iii_3:
+  anexo: III
+  rbt12_from: 360000.01
+  rbt12_to: 720000
+  rate: 0.135
+  deduction: 17640
+  valid_from: 2018-01-01
+
+iii_4:
+  anexo: III
+  rbt12_from: 720000.01
+  rbt12_to: 1800000
+  rate: 0.16
+  deduction: 35640
+  valid_from: 2018-01-01
+
+iii_5:
+  anexo: III
+  rbt12_from: 1800000.01
+  rbt12_to: 3600000
+  rate: 0.21
+  deduction: 125640
+  valid_from: 2018-01-01
+
+iii_6:
+  anexo: III
+  rbt12_from: 3600000.01
+  rbt12_to: 4800000
+  rate: 0.33
+  deduction: 648000
+  valid_from: 2018-01-01
+
+v_1:
+  anexo: V
+  rbt12_from: 0
+  rbt12_to: 180000
+  rate: 0.155
+  deduction: 0
+  valid_from: 2018-01-01
+
+v_2:
+  anexo: V
+  rbt12_from: 180000.01
+  rbt12_to: 360000
+  rate: 0.18
+  deduction: 4500
+  valid_from: 2018-01-01
+
+v_3:
+  anexo: V
+  rbt12_from: 360000.01
+  rbt12_to: 720000
+  rate: 0.195
+  deduction: 9900
+  valid_from: 2018-01-01
+
+v_4:
+  anexo: V
+  rbt12_from: 720000.01
+  rbt12_to: 1800000
+  rate: 0.205
+  deduction: 17100
+  valid_from: 2018-01-01
+
+v_5:
+  anexo: V
+  rbt12_from: 1800000.01
+  rbt12_to: 3600000
+  rate: 0.23
+  deduction: 62100
+  valid_from: 2018-01-01
+
+v_6:
+  anexo: V
+  rbt12_from: 3600000.01
+  rbt12_to: 4800000
+  rate: 0.305
+  deduction: 540000
+  valid_from: 2018-01-01

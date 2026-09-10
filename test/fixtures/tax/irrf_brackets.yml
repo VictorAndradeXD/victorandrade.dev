@@ -1,0 +1,71 @@
+# Faixas progressivas do IRRF, iguais nas duas vigências. O rótulo em `rule:`
+# aponta para test/fixtures/tax/irrf_rules.yml — sem sufixo de classe, que é
+# sintaxe de associação polimórfica e aqui geraria um id inexistente.
+
+irrf_2025_f1:
+  rule: irrf_2025
+  base_from: 0
+  base_to: 2428.8
+  rate: 0.0
+  deduction: 0
+
+irrf_2025_f2:
+  rule: irrf_2025
+  base_from: 2428.81
+  base_to: 2826.65
+  rate: 0.075
+  deduction: 182.16
+
+irrf_2025_f3:
+  rule: irrf_2025
+  base_from: 2826.66
+  base_to: 3751.05
+  rate: 0.15
+  deduction: 394.16
+
+irrf_2025_f4:
+  rule: irrf_2025
+  base_from: 3751.06
+  base_to: 4664.68
+  rate: 0.225
+  deduction: 675.49
+
+irrf_2025_f5:
+  rule: irrf_2025
+  base_from: 4664.69
+  rate: 0.275
+  deduction: 908.73
+
+irrf_2026_f1:
+  rule: irrf_2026
+  base_from: 0
+  base_to: 2428.8
+  rate: 0.0
+  deduction: 0
+
+irrf_2026_f2:
+  rule: irrf_2026
+  base_from: 2428.81
+  base_to: 2826.65
+  rate: 0.075
+  deduction: 182.16
+
+irrf_2026_f3:
+  rule: irrf_2026
+  base_from: 2826.66
+  base_to: 3751.05
+  rate: 0.15
+  deduction: 394.16
+
+irrf_2026_f4:
+  rule: irrf_2026
+  base_from: 3751.06
+  base_to: 4664.68
+  rate: 0.225
+  deduction: 675.49
+
+irrf_2026_f5:
+  rule: irrf_2026
+  base_from: 4664.69
+  rate: 0.275
+  deduction: 908.73

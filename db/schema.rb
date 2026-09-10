@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_09_120001) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_10_120001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -89,6 +89,71 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_09_120001) do
     t.index ["user_id"], name: "index_tags_on_user_id"
   end
 
+  create_table "tax_anexo_brackets", force: :cascade do |t|
+    t.string "anexo", null: false
+    t.datetime "created_at", null: false
+    t.decimal "deduction", precision: 14, scale: 2, default: "0.0", null: false
+    t.decimal "rate", precision: 7, scale: 6, null: false
+    t.decimal "rbt12_from", precision: 14, scale: 2, null: false
+    t.decimal "rbt12_to", precision: 14, scale: 2
+    t.datetime "updated_at", null: false
+    t.date "valid_from", null: false
+    t.date "valid_to"
+    t.index ["anexo", "valid_from", "rbt12_from"], name: "index_tax_anexo_brackets_lookup"
+    t.check_constraint "anexo::text = ANY (ARRAY['III'::character varying, 'V'::character varying]::text[])", name: "tax_anexo_brackets_anexo_check"
+    t.check_constraint "deduction >= 0::numeric", name: "tax_anexo_brackets_deduction_non_negative"
+    t.check_constraint "rate > 0::numeric AND rate < 1::numeric", name: "tax_anexo_brackets_rate_range"
+    t.check_constraint "rbt12_from >= 0::numeric", name: "tax_anexo_brackets_from_non_negative"
+    t.check_constraint "rbt12_to IS NULL OR rbt12_to > rbt12_from", name: "tax_anexo_brackets_range_order"
+    t.check_constraint "valid_to IS NULL OR valid_to >= valid_from", name: "tax_anexo_brackets_validity_order"
+  end
+
+  create_table "tax_inss_rules", force: :cascade do |t|
+    t.decimal "ceiling", precision: 14, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.decimal "minimum_wage", precision: 14, scale: 2, null: false
+    t.decimal "rate", precision: 7, scale: 6, null: false
+    t.datetime "updated_at", null: false
+    t.date "valid_from", null: false
+    t.date "valid_to"
+    t.index ["valid_from"], name: "index_tax_inss_rules_on_valid_from"
+    t.check_constraint "ceiling > 0::numeric", name: "tax_inss_rules_ceiling_positive"
+    t.check_constraint "minimum_wage > 0::numeric", name: "tax_inss_rules_wage_positive"
+    t.check_constraint "rate > 0::numeric AND rate < 1::numeric", name: "tax_inss_rules_rate_range"
+    t.check_constraint "valid_to IS NULL OR valid_to >= valid_from", name: "tax_inss_rules_validity_order"
+  end
+
+  create_table "tax_irrf_brackets", force: :cascade do |t|
+    t.decimal "base_from", precision: 14, scale: 2, null: false
+    t.decimal "base_to", precision: 14, scale: 2
+    t.datetime "created_at", null: false
+    t.decimal "deduction", precision: 14, scale: 2, default: "0.0", null: false
+    t.decimal "rate", precision: 7, scale: 6, null: false
+    t.bigint "tax_irrf_rule_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tax_irrf_rule_id"], name: "index_tax_irrf_brackets_on_tax_irrf_rule_id"
+    t.check_constraint "base_from >= 0::numeric", name: "tax_irrf_brackets_from_non_negative"
+    t.check_constraint "base_to IS NULL OR base_to > base_from", name: "tax_irrf_brackets_range_order"
+    t.check_constraint "deduction >= 0::numeric", name: "tax_irrf_brackets_deduction_non_negative"
+    t.check_constraint "rate >= 0::numeric AND rate < 1::numeric", name: "tax_irrf_brackets_rate_range"
+  end
+
+  create_table "tax_irrf_rules", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.decimal "dependent_deduction", precision: 14, scale: 2, null: false
+    t.decimal "exempt_up_to", precision: 14, scale: 2
+    t.decimal "phase_out_up_to", precision: 14, scale: 2
+    t.decimal "simplified_discount", precision: 14, scale: 2, null: false
+    t.datetime "updated_at", null: false
+    t.date "valid_from", null: false
+    t.date "valid_to"
+    t.index ["valid_from"], name: "index_tax_irrf_rules_on_valid_from"
+    t.check_constraint "dependent_deduction >= 0::numeric", name: "tax_irrf_rules_dependent_non_negative"
+    t.check_constraint "phase_out_up_to IS NULL OR exempt_up_to IS NULL OR phase_out_up_to >= exempt_up_to", name: "tax_irrf_rules_phase_out_order"
+    t.check_constraint "simplified_discount >= 0::numeric", name: "tax_irrf_rules_simplified_non_negative"
+    t.check_constraint "valid_to IS NULL OR valid_to >= valid_from", name: "tax_irrf_rules_validity_order"
+  end
+
   create_table "transaction_items", force: :cascade do |t|
     t.decimal "amount", precision: 14, scale: 2, null: false
     t.datetime "created_at", null: false
@@ -150,6 +215,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_09_120001) do
   add_foreign_key "recurring_rules", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "tags", "users"
+  add_foreign_key "tax_irrf_brackets", "tax_irrf_rules"
   add_foreign_key "transaction_items", "transactions"
   add_foreign_key "transactions", "accounts"
   add_foreign_key "transactions", "installment_plans"

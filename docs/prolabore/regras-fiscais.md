@@ -169,10 +169,47 @@ plano.
 - Empregados CLT, FGTS, férias, 13º, rescisão.
 - Regimes fora do Simples Nacional.
 
+## Estado da implementação
+
+O **núcleo de cálculo** existe em `app/models/tax/` e é puro: entra número, sai
+número. Não conhece empresa, sócio nem competência — isso vem por cima, depois.
+
+| Classe | Responsabilidade |
+|---|---|
+| `Tax::AnexoBracket` | Faixas dos Anexos III e V, com vigência |
+| `Tax::InssRule` | Alíquota, teto e salário mínimo, com vigência |
+| `Tax::IrrfRule` / `Tax::IrrfBracket` | Parâmetros e faixas do IRRF, com vigência |
+| `Tax::Simples` | Alíquota efetiva e DAS anual de um anexo |
+| `Tax::Inss` | Retenção do sócio, travada no teto |
+| `Tax::Irrf` | Menor das duas bases, tabela progressiva, isenção de 2026 |
+| `Tax::FatorR` | Razão folha/receita e o anexo resultante |
+| `Tax::Optimization` | Simulador reverso: pró-labore mínimo e economia × custo |
+
+Sem tabela vigente para a data pedida, o cálculo levanta `Tax::MissingRule` em
+vez de devolver zero — número errado com cara de verdade é pior que erro.
+
+**Ainda não existe:** cadastro de empresa, sócio e competência; a janela móvel de
+12 meses alimentada por dados reais; a proporcionalização de início de atividade;
+as telas.
+
+### Duas aproximações que precisam de conferência
+
+1. **A redução parcial do IRRF de 2026 está modelada como interpolação linear**
+   entre o teto de isenção (R$5.000) e o fim da faixa (R$7.350). A lei define um
+   redutor com fórmula própria. O modelo acerta os extremos — zero no teto de
+   isenção, imposto cheio no fim — e aproxima o meio. Corrigir é trocar só
+   `Tax::Irrf#reduction_factor`.
+2. **INSS e IRRF de 2026 no seed são valores arrastados de 2025.** Não são os
+   números oficiais. A exceção é a isenção de R$5.000 / R$7.350, que é a regra
+   de 2026 de fato.
+
 ## A confirmar com a contadora
 
 - [ ] Valores das tabelas dos Anexos III e V (alíquotas e parcelas a deduzir).
-- [ ] Teto do INSS e tabela do IRRF vigentes, incluindo a regra de isenção de 2026.
+- [ ] **Teto do INSS e salário mínimo de 2026** — o seed usa os de 2025.
+- [ ] **Tabela progressiva do IRRF de 2026** — o seed usa a de maio/2025.
+- [ ] **Fórmula do redutor de IRRF de 2026** entre R$5.000 e R$7.350 — hoje é
+      uma interpolação linear, não a fórmula legal.
 - [ ] Salário mínimo vigente (piso do pró-labore).
 - [ ] CNAE da empresa A e CNAE pretendido da empresa B.
 - [ ] Como a tributação de dividendos acima de R$50 mil/mês (a partir de 2026)

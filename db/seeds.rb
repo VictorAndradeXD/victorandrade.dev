@@ -5,9 +5,11 @@
 #
 # Sem DENFIS_SEED_PASSWORD, uma senha aleatória é gerada e impressa uma vez.
 
-# E-mail de teste, gerado aleatoriamente e fixo para o seed ser idempotente.
+# Endereço de desenvolvimento. O domínio `.test` é reservado pela RFC 2606 e não
+# pode ser registrado por ninguém: um e-mail de recuperação de senha disparado
+# por engano não tem como chegar na caixa de um estranho. Por isso não é .com.
 # Quando o endereço real for definido, troque aqui ou passe DENFIS_SEED_EMAIL.
-email = ENV.fetch("DENFIS_SEED_EMAIL", "teste-4e87ea6a@denfis.test")
+email = ENV.fetch("DENFIS_SEED_EMAIL", "admin@denfis.test")
 password = ENV["DENFIS_SEED_PASSWORD"].presence || SecureRandom.alphanumeric(16)
 
 user = User.find_by(email_address: email)

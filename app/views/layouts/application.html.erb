@@ -28,6 +28,17 @@
           </div>
 
           <div class="ml-auto flex items-center gap-3">
+            <%# Atalho entre módulos, e não mais uma aba do Denfis: por isso fica
+                aqui na direita e não junto das seções. Só aparece para quem tem
+                a permissão — a mesma que o require_accounting_access exige, de
+                modo que o link nunca leva a um redirect. %>
+            <% if current_user&.accounting_access? %>
+              <%= link_to contabil_path, class: "btn-ghost text-sm whitespace-nowrap",
+                          title: "Ir para o módulo contábil" do %>
+                <span class="text-brand">%</span><span class="hidden md:inline ml-1.5">Contábil</span>
+              <% end %>
+            <% end %>
+
             <button type="button" data-controller="theme" data-action="theme#toggle"
                     class="btn-ghost text-sm px-2.5" aria-label="Alternar tema">
               <span data-theme-target="icon">☀</span>

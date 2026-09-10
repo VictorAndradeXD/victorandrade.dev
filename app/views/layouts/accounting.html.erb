@@ -19,6 +19,15 @@
         </div>
 
         <div class="ml-auto flex items-center gap-3">
+          <%# A volta, pela mesma regra. A contadora não tem denfis_access, então
+              para ela este link não existe. %>
+          <% if current_user&.denfis_access? %>
+            <%= link_to denfis_root_path, class: "btn-ghost text-sm whitespace-nowrap",
+                        title: "Ir para o Denfis" do %>
+              <span class="text-brand">◆</span><span class="hidden md:inline ml-1.5">Denfis</span>
+            <% end %>
+          <% end %>
+
           <button type="button" data-controller="theme" data-action="theme#toggle"
                   class="btn-ghost text-sm px-2.5" aria-label="Alternar tema">
             <span data-theme-target="icon">☀</span>

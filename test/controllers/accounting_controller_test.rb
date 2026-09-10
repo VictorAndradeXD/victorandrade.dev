@@ -75,6 +75,26 @@ class AccountingControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Você não tem acesso ao módulo contábil.", flash[:alert]
   end
 
+  test "o header do Denfis oferece o contábil só a quem tem a permissão" do
+    sign_in_as @dono
+    get denfis_root_path
+    assert_select "a[href=?]", contabil_path, count: 0
+
+    @dono.update_columns(accounting_access: true)
+    get denfis_root_path
+    assert_select "a[href=?]", contabil_path, count: 1
+  end
+
+  test "o header do contábil oferece a volta ao Denfis só a quem tem a permissão" do
+    sign_in_as @contadora
+    get contabil_path
+    assert_select "a[href=?]", denfis_root_path, count: 0
+
+    @contadora.update_columns(denfis_access: true)
+    get contabil_path
+    assert_select "a[href=?]", denfis_root_path, count: 1
+  end
+
   test "o rodapé do portfólio oferece só o módulo de quem está logado" do
     sign_in_as @contadora
     get root_path

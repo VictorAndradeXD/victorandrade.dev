@@ -9,7 +9,7 @@
 # pode ser registrado por ninguém: um e-mail de recuperação de senha disparado
 # por engano não tem como chegar na caixa de um estranho. Por isso não é .com.
 # Quando o endereço real for definido, troque aqui ou passe DENFIS_SEED_EMAIL.
-email = ENV.fetch("DENFIS_SEED_EMAIL", "admin@denfis.test")
+email = ENV.fetch("DENFIS_SEED_EMAIL", "admin@app.test")
 password = ENV["DENFIS_SEED_PASSWORD"].presence || SecureRandom.alphanumeric(16)
 
 user = User.find_by(email_address: email)

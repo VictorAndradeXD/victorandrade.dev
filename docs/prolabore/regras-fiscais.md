@@ -214,7 +214,22 @@ teste:
 Os impostos do pró-labore ficam **gravados no lançamento**, não recalculados na
 leitura: a tabela do ano que vem não pode reescrever o que já foi recolhido.
 
-**Ainda não existe:** as telas.
+As **telas** vivem em `/contabil`:
+
+| Rota | O quê |
+|---|---|
+| `/contabil` | Carteira: uma empresa por cartão, com fator R, trilho até os 28% e a economia potencial |
+| `/contabil/empresas/:id` | Painel: fator R, enquadramento, RBT12, folha, e a simulação economia × custo |
+| `/contabil/empresas/:id/competencias` | Lançamento mensal de receita e pró-labore |
+
+O painel troca de discurso conforme o enquadramento: quem está no Anexo V vê a
+**simulação de migração** com a tabela economia × custo; quem já está no III vê
+a **manutenção**, com a folha mínima para não cair — e um alerta quando a margem
+está a menos de 2 pontos do limite, porque o fator R é degrau e um mês de
+faturamento acima da média derruba tudo sem aviso.
+
+**Ainda não existe:** recibo de pró-labore, a "cola" do S-1200, painel de prazos
+e o fechamento de competência em lote.
 
 ### Duas aproximações que precisam de conferência
 

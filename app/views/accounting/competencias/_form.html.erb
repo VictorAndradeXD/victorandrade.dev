@@ -1,0 +1,68 @@
+<%= form_with model: [ :contabil, company, competencia ], class: "space-y-6" do |form| %>
+  <% if competencia.errors.any? %>
+    <div class="rounded-lg border border-expense/30 bg-expense/10 px-4 py-3 text-sm text-expense">
+      <ul class="space-y-1">
+        <% competencia.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="card space-y-5">
+    <div class="grid gap-5 sm:grid-cols-2">
+      <div>
+        <%= form.label :month, "Competência", class: "label" %>
+        <%= form.month_field :month, required: true %>
+      </div>
+
+      <div>
+        <%= form.label :gross_revenue, "Receita bruta do mês", class: "label" %>
+        <%= form.number_field :gross_revenue, step: "0.01", min: 0, required: true %>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="font-medium text-ink">Pró-labore</h2>
+    <p class="mt-1 text-sm text-muted">
+      INSS e IRRF são calculados pela tabela vigente na competência e ficam
+      gravados no lançamento. Deixe em branco para registrar que não houve
+      pró-labore no mês.
+    </p>
+
+    <div class="mt-5 space-y-4">
+      <%= form.fields_for :prolabores do |prolabore_form| %>
+        <% partner = prolabore_form.object.partner %>
+        <div class="grid gap-4 sm:grid-cols-[2fr_1fr] sm:items-end">
+          <div>
+            <%= prolabore_form.hidden_field :partner_id %>
+            <span class="label"><%= partner&.name %></span>
+            <p class="text-xs text-muted">
+              <%= partner&.cpf_formatted %>
+              <% if partner && partner.dependents_count.positive? %>
+                · <%= pluralize(partner.dependents_count, "dependente") %>
+              <% end %>
+            </p>
+          </div>
+          <div>
+            <%= prolabore_form.label :gross, "Valor bruto", class: "label" %>
+            <%= prolabore_form.number_field :gross, step: "0.01", min: 0 %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if company.partners.empty? %>
+        <p class="text-sm text-muted">
+          Nenhum sócio cadastrado.
+          <%= link_to "Cadastrar", edit_contabil_company_path(company), class: "text-brand hover:underline underline-offset-4" %>.
+        </p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <%= form.submit competencia.persisted? ? "Salvar" : "Lançar", class: "btn-primary" %>
+    <%= link_to "Cancelar", contabil_company_competencias_path(company), class: "btn-ghost" %>
+  </div>
+<% end %>

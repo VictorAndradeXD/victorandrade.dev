@@ -1,0 +1,76 @@
+<% content_for :title, "Carteira" %>
+
+<header class="flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-ink">Carteira</h1>
+    <p class="mt-1 text-sm text-muted">Posição em <%= month_label(@month) %></p>
+  </div>
+  <%= link_to "Nova empresa", new_contabil_company_path, class: "btn-primary text-sm" %>
+</header>
+
+<% if @companies.empty? %>
+  <div class="card mt-8 text-center py-12">
+    <p class="text-ink font-medium">Nenhuma empresa cadastrada</p>
+    <p class="mt-2 text-sm text-muted max-w-md mx-auto leading-relaxed">
+      Cadastre a primeira empresa para acompanhar o fator R dela e simular o
+      pró-labore que a leva do Anexo V para o Anexo III.
+    </p>
+    <p class="mt-5">
+      <%= link_to "Cadastrar empresa", new_contabil_company_path, class: "btn-primary text-sm" %>
+    </p>
+  </div>
+<% else %>
+  <div class="mt-8 grid gap-4 lg:grid-cols-2">
+    <% @companies.each do |company| %>
+      <% window = @windows[company] %>
+      <% status = fator_r_status(window) %>
+
+      <%= link_to contabil_company_path(company, month: @month.strftime("%Y-%m")),
+                  class: "card block hover:border-muted transition-colors" do %>
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <h2 class="font-semibold text-ink truncate"><%= company.name %></h2>
+            <p class="mt-0.5 text-xs text-muted"><%= company.cnpj_formatted %></p>
+          </div>
+          <span class="shrink-0 text-xs border rounded-full px-2.5 py-1 <%= tone_classes(status[:tone]) %>">
+            <%= status[:label] %>
+          </span>
+        </div>
+
+        <div class="mt-5 flex items-baseline gap-2">
+          <span class="text-3xl font-semibold text-ink"><%= percent(window.fator_r.value) %></span>
+          <span class="text-sm text-muted">de fator R</span>
+        </div>
+
+        <%# Trilho até os 28%. O degrau fica marcado no fim da barra. %>
+        <div class="mt-3 h-1.5 rounded-full bg-elevated overflow-hidden">
+          <div class="h-full rounded-full <%= status[:tone] == :danger ? 'bg-expense' : 'bg-income' %>"
+               style="width: <%= fator_r_progress(window) %>%"></div>
+        </div>
+
+        <dl class="mt-5 grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <dt class="text-muted">Receita 12 meses</dt>
+            <dd class="text-ink mt-0.5"><%= money(window.rbt12) %></dd>
+          </div>
+          <div>
+            <dt class="text-muted">Folha 12 meses</dt>
+            <dd class="text-ink mt-0.5"><%= money(window.folha12) %></dd>
+          </div>
+        </dl>
+
+        <% unless window.fator_r.reaches? %>
+          <% optimization = window.optimization %>
+          <p class="mt-5 pt-4 border-t border-hairline text-sm">
+            <% if optimization.worth_it? %>
+              <span class="text-income font-medium"><%= money(optimization.net_saving) %>/ano</span>
+              <span class="text-muted">de economia com pró-labore de <%= money(optimization.required_monthly_prolabore) %>/mês</span>
+            <% else %>
+              <span class="text-muted">Migrar não compensa neste faturamento.</span>
+            <% end %>
+          </p>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

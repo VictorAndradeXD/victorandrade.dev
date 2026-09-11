@@ -1,0 +1,10 @@
+<% content_for :title, "Nova competência" %>
+
+<p class="text-sm text-muted">
+  <%= link_to @company.name, contabil_company_path(@company), class: "hover:text-ink transition-colors" %>
+</p>
+<h1 class="mt-1 text-2xl font-semibold tracking-tight text-ink">Lançar competência</h1>
+
+<div class="mt-6 max-w-3xl">
+  <%= render "form", company: @company, competencia: @competencia %>
+</div>

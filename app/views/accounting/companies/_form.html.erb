@@ -1,0 +1,90 @@
+<%= form_with model: [ :contabil, company ], class: "space-y-6" do |form| %>
+  <% if company.errors.any? %>
+    <div class="rounded-lg border border-expense/30 bg-expense/10 px-4 py-3 text-sm text-expense">
+      <ul class="space-y-1">
+        <% company.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="card space-y-5">
+    <div>
+      <%= form.label :name, "Razão social", class: "label" %>
+      <%= form.text_field :name, required: true, autofocus: true %>
+    </div>
+
+    <div class="grid gap-5 sm:grid-cols-2">
+      <div>
+        <%= form.label :cnpj, "CNPJ", class: "label" %>
+        <%= form.text_field :cnpj, required: true, placeholder: "00.000.000/0000-00",
+              value: company.persisted? ? company.cnpj_formatted : company.cnpj %>
+        <p class="mt-1 text-xs text-muted">Com ou sem pontuação — o dígito é conferido.</p>
+      </div>
+
+      <div>
+        <%= form.label :started_on, "Início de atividade", class: "label" %>
+        <%= form.date_field :started_on, required: true %>
+        <p class="mt-1 text-xs text-muted">Define a proporcionalização no primeiro ano.</p>
+      </div>
+    </div>
+
+    <label class="flex items-start gap-3 text-sm">
+      <%= form.check_box :fator_r_eligible, class: "mt-0.5" %>
+      <span>
+        <span class="text-ink">Atividade sujeita ao fator R</span>
+        <span class="block text-muted text-xs mt-0.5">
+          Marque quando a empresa alterna entre os Anexos III e V conforme a folha.
+          Desmarque para atividades que ficam sempre no mesmo anexo.
+        </span>
+      </span>
+    </label>
+
+    <% if company.persisted? %>
+      <label class="flex items-center gap-3 text-sm">
+        <%= form.check_box :archived %>
+        <span class="text-ink">Arquivada</span>
+      </label>
+    <% end %>
+  </div>
+
+  <div class="card">
+    <h2 class="font-medium text-ink">Sócios</h2>
+    <p class="mt-1 text-sm text-muted">Quem recebe pró-labore. O CPF tem o dígito conferido.</p>
+
+    <div class="mt-5 space-y-5">
+      <%= form.fields_for :partners do |partner_form| %>
+        <div class="grid gap-4 sm:grid-cols-[2fr_1.5fr_auto_auto] sm:items-end">
+          <div>
+            <%= partner_form.label :name, "Nome", class: "label" %>
+            <%= partner_form.text_field :name %>
+          </div>
+          <div>
+            <%= partner_form.label :cpf, "CPF", class: "label" %>
+            <%= partner_form.text_field :cpf, placeholder: "000.000.000-00",
+                  value: partner_form.object.persisted? ? partner_form.object.cpf_formatted : partner_form.object.cpf %>
+          </div>
+          <div>
+            <%= partner_form.label :dependents_count, "Dependentes", class: "label" %>
+            <%= partner_form.number_field :dependents_count, min: 0, value: partner_form.object.dependents_count || 0,
+                  class: "w-24" %>
+          </div>
+          <% if partner_form.object.persisted? %>
+            <label class="flex items-center gap-2 text-sm text-muted pb-2.5">
+              <%= partner_form.check_box :_destroy %> remover
+            </label>
+          <% else %>
+            <span></span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <%= form.submit company.persisted? ? "Salvar" : "Cadastrar", class: "btn-primary" %>
+    <%= link_to "Cancelar", company.persisted? ? contabil_company_path(company) : contabil_path,
+                class: "btn-ghost" %>
+  </div>
+<% end %>

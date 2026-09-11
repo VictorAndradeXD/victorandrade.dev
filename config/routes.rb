@@ -6,8 +6,17 @@ Rails.application.routes.draw do
   # um sob o seu próprio prefixo.
   root "portfolio#show"
 
-  get "blog",     to: "blog#index"
-  get "contabil", to: "accounting#index"
+  get "blog", to: "blog#index"
+
+  # Módulo contábil. A raiz fica solta para `contabil_path` seguir apontando
+  # para ela; o resto vive no scope abaixo, que prefixa URL e helper.
+  get "contabil", to: "accounting/companies#index"
+
+  scope module: "accounting", path: "contabil", as: :contabil do
+    resources :companies, path: "empresas", except: :destroy do
+      resources :competencias, path: "competencias", only: %i[index new create edit update]
+    end
+  end
 
   # `scope path:` sem `as:` é de propósito: as URLs ganham o prefixo /denfis,
   # mas os helpers continuam sendo transactions_path, accounts_path e companhia,

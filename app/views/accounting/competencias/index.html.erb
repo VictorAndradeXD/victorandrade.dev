@@ -1,0 +1,64 @@
+<% content_for :title, "Competências — #{@company.name}" %>
+
+<header class="flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <p class="text-sm text-muted">
+      <%= link_to @company.name, contabil_company_path(@company), class: "hover:text-ink transition-colors" %>
+    </p>
+    <h1 class="mt-1 text-2xl font-semibold tracking-tight text-ink">Competências</h1>
+  </div>
+  <%= link_to "Lançar competência", new_contabil_company_competencia_path(@company), class: "btn-primary text-sm" %>
+</header>
+
+<% if @company.partners.empty? %>
+  <p class="mt-6 rounded-lg border border-amber-400/25 bg-amber-400/10 text-amber-400 px-4 py-3 text-sm">
+    A empresa ainda não tem sócio cadastrado. Sem sócio não há pró-labore, e sem
+    pró-labore o fator R fica em zero.
+    <%= link_to "Cadastrar sócio", edit_contabil_company_path(@company), class: "underline underline-offset-4" %>.
+  </p>
+<% end %>
+
+<% if @competencias.empty? %>
+  <div class="card mt-8 text-center py-12">
+    <p class="text-ink font-medium">Nenhuma competência lançada</p>
+    <p class="mt-2 text-sm text-muted max-w-md mx-auto leading-relaxed">
+      O fator R olha os 12 meses anteriores ao mês apurado. Quanto mais história
+      lançada, mais cedo o cálculo fica confiável.
+    </p>
+    <p class="mt-5">
+      <%= link_to "Lançar a primeira", new_contabil_company_competencia_path(@company), class: "btn-primary text-sm" %>
+    </p>
+  </div>
+<% else %>
+  <div class="card mt-8 overflow-x-auto">
+    <table class="w-full text-sm min-w-lg">
+      <thead>
+        <tr class="text-muted text-left border-b border-hairline">
+          <th class="pb-2.5 font-normal">Competência</th>
+          <th class="pb-2.5 font-normal text-right">Receita</th>
+          <th class="pb-2.5 font-normal text-right">Pró-labore</th>
+          <th class="pb-2.5 font-normal text-right">INSS</th>
+          <th class="pb-2.5 font-normal text-right">IRRF</th>
+          <th class="pb-2.5"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-hairline">
+        <% @competencias.each do |competencia| %>
+          <tr>
+            <td class="py-2.5 text-ink"><%= month_label(competencia.month) %></td>
+            <td class="py-2.5 text-right text-ink"><%= money(competencia.gross_revenue) %></td>
+            <td class="py-2.5 text-right <%= competencia.folha.zero? ? 'text-muted' : 'text-ink' %>">
+              <%= competencia.folha.zero? ? "—" : money(competencia.folha) %>
+            </td>
+            <td class="py-2.5 text-right text-muted"><%= money(competencia.prolabores.sum(:inss)) %></td>
+            <td class="py-2.5 text-right text-muted"><%= money(competencia.prolabores.sum(:irrf)) %></td>
+            <td class="py-2.5 text-right">
+              <%= link_to "Editar", edit_contabil_company_competencia_path(@company, competencia),
+                          class: "text-muted hover:text-ink transition-colors" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>

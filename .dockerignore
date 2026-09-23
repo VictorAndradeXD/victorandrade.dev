@@ -1,0 +1,50 @@
+# Arquivos que não devem entrar na imagem — seja por peso, por segredo ou por
+# serem gerados dentro do próprio build.
+
+# Git
+.git/
+.gitignore
+.github/
+
+# Dependências e config local do bundler
+/.bundle/
+/vendor/bundle/
+
+# Variáveis de ambiente
+/.env*
+
+# Logs e temporários
+/log/*
+/tmp/*
+!/log/.keep
+!/tmp/.keep
+/tmp/pids/*
+!/tmp/pids/.keep
+
+# Anexos do Active Storage: em produção vivem num volume, não na imagem.
+/storage/*
+!/storage/.keep
+/tmp/storage/*
+!/tmp/storage/.keep
+
+# Assets: regerados pelo assets:precompile durante o build.
+/public/assets
+/app/assets/builds/*
+!/app/assets/builds/.keep
+
+# A master key entra como variável de ambiente pelo Kamal, nunca na imagem.
+/config/master.key
+/config/credentials/*.key
+
+# Cache do bootsnap da máquina de desenvolvimento
+/tmp/cache/
+!/tmp/cache/.keep
+
+# Testes e ferramentas de desenvolvimento
+/test/
+/.kamal/
+/docs/
+
+# Editor / SO
+.DS_Store
+*.swp

@@ -1,5 +1,9 @@
 require "active_support/core_ext/integer/time"
 
+# Domínio público da aplicação. Definido em config/deploy.yml; o default cobre o
+# `assets:precompile` do build da imagem, que roda sem variáveis de ambiente.
+APP_HOST = ENV.fetch("APP_HOST", "victorandrade.dev")
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -59,17 +63,22 @@ Rails.application.configure do
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 
-  # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
+  # O host vem do ambiente (APP_HOST, definido em config/deploy.yml) para o mesmo
+  # build servir qualquer domínio sem recompilar a imagem. O default existe
+  # porque o `assets:precompile` do Dockerfile carrega este arquivo sem APP_HOST
+  # definido — um ENV.fetch sem default quebraria o build da imagem.
+  config.action_mailer.default_url_options = { host: APP_HOST }
 
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+  # SMTP externo, não o IP do VPS. Servidor doméstico ou VPS barato manda e-mail
+  # direto para o spam — e a recuperação de senha depende disto funcionar.
+  config.action_mailer.smtp_settings = {
+    address:        ENV.fetch("SMTP_ADDRESS", "smtp.resend.com"),
+    port:           ENV.fetch("SMTP_PORT", 587).to_i,
+    user_name:      ENV["SMTP_USER_NAME"],
+    password:       ENV["SMTP_PASSWORD"],
+    authentication: :plain,
+    enable_starttls_auto: true
+  }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
@@ -81,12 +90,10 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
 
-  # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  #
-  # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # Proteção contra DNS rebinding e ataques via cabeçalho Host.
+  config.hosts = [ APP_HOST, ".#{APP_HOST}" ]
+
+  # O healthcheck do kamal-proxy bate no container pelo IP interno, sem o Host
+  # do domínio. Sem esta exceção ele levaria 403 e o deploy nunca completaria.
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end

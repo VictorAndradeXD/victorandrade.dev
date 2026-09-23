@@ -1,0 +1,110 @@
+# Deploy com Kamal 2 para um único VPS (RackNerd, 2 GB).
+#
+# Tudo roda na mesma máquina: o container do Rails e o do Postgres, ligados pela
+# rede interna do Kamal. É o arranjo mais barato que existe e, para o volume
+# desta app (medido: ~210 MB de Puma, ~25 req/s), sobra folga.
+#
+# ANTES DO PRIMEIRO DEPLOY, preencha os três campos marcados com SUBSTITUA.
+
+# Prefixo dos containers: vira denfis-web e denfis-db.
+service: denfis
+
+# SUBSTITUA pelo seu usuário do Docker Hub. A conta grátis dá 1 repo privado,
+# que é exatamente o que precisamos.
+image: SUBSTITUA_USUARIO_DOCKERHUB/denfis
+
+servers:
+  web:
+    # SUBSTITUA pelo IP do VPS.
+    - SUBSTITUA_IP_DO_VPS
+
+# O kamal-proxy fica na frente, termina o TLS e pede o certificado ao
+# Let's Encrypt automaticamente. Para isso o DNS do domínio já precisa estar
+# apontando para o IP acima — senão a emissão falha.
+proxy:
+  ssl: true
+  host: victorandrade.dev
+  healthcheck:
+    # A app já expõe /up (config/routes.rb). Note que production.rb tem
+    # assume_ssl = true, então o force_ssl não redireciona esta chamada
+    # interna em HTTP — o healthcheck responde 200 direto.
+    path: /up
+    interval: 5
+    timeout: 60
+
+registry:
+  # SUBSTITUA pelo mesmo usuário do Docker Hub usado em `image`.
+  username: SUBSTITUA_USUARIO_DOCKERHUB
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  # A imagem é construída aqui na sua máquina e enviada pronta. Não tente
+  # construir no VPS: `bundle install` + `assets:precompile` estouram os 2 GB.
+  arch: amd64
+
+env:
+  clear:
+    # Nome do container do accessory dentro da rede do Kamal.
+    DENFIS_DATABASE_HOST: denfis-db
+    DENFIS_DATABASE_PORT: 5432
+    DENFIS_DATABASE_USER: denfis
+
+    # O Puma está em modo single (config/puma.rb, sem `workers`). Três threads
+    # é o suficiente para o uso previsto e mantém a memória previsível.
+    RAILS_MAX_THREADS: 3
+
+    # Usado pelo mailer e pela proteção de Host em production.rb.
+    APP_HOST: victorandrade.dev
+  secret:
+    - RAILS_MASTER_KEY
+    - DENFIS_DATABASE_PASSWORD
+    # Credenciais do SMTP externo. Não envie e-mail pelo IP do VPS: uma parte
+    # das faixas da RackNerd tem reputação ruim e a recuperação de senha
+    # simplesmente não chega.
+    - SMTP_USER_NAME
+    - SMTP_PASSWORD
+
+accessories:
+  db:
+    image: postgres:18
+    # SUBSTITUA pelo mesmo IP do VPS.
+    host: SUBSTITUA_IP_DO_VPS
+    # Publicado só no loopback: de fora ninguém alcança o banco. O container da
+    # app não usa esta porta, fala com o `denfis-db` pela rede interna.
+    port: "127.0.0.1:5432:5432"
+    env:
+      clear:
+        POSTGRES_USER: denfis
+        POSTGRES_DB: denfis_production
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      # ATENÇÃO: postgres:18 exige o mount na RAIZ (/var/lib/postgresql) e cria
+      # o subdiretório da versão dentro dela. Apontar para /data, como nas
+      # imagens <= 17, faz o container abortar no boot. Mesma pegadinha que já
+      # está documentada no docker-compose.yml de desenvolvimento.
+      - data:/var/lib/postgresql
+
+volumes:
+  # Anexos do Active Storage (config.active_storage.service = :local).
+  # Sem este volume, todo deploy apagaria os arquivos enviados.
+  - "denfis_storage:/rails/storage"
+
+aliases:
+  console: app exec --interactive --reuse "bin/rails console"
+  shell: app exec --interactive --reuse "bash"
+  logs: app logs -f
+  dbc: accessory exec db --interactive --reuse "psql -U denfis denfis_production"
+
+# Quando o módulo de pró-labore começar a transmitir eSocial/DCTFWeb, o envio é
+# assíncrono (envia, recebe protocolo, consulta recibo depois) e vai precisar de
+# fila. Aí acrescente o Solid Queue e um segundo papel aqui:
+#
+#   servers:
+#     job:
+#       hosts:
+#         - SUBSTITUA_IP_DO_VPS
+#       cmd: bin/jobs
+#
+# São ~200 MB a mais de processo Ruby — cabe nos 2 GB, mas não caberia em 1 GB.

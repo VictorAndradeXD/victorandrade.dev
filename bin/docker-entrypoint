@@ -1,0 +1,16 @@
+#!/bin/bash -e
+
+# jemalloc no lugar do malloc da glibc. O Ruby fragmenta muito o heap em
+# processos de vida longa; sem isto, o Puma vai crescendo sem estar vazando.
+if [ -z "${LD_PRELOAD+x}" ]; then
+  LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit)
+  export LD_PRELOAD
+fi
+
+# Só o container do servidor toca o banco. `db:prepare` cria na primeira subida
+# e depois aplica apenas as migrations pendentes — é idempotente.
+if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+  ./bin/rails db:prepare
+fi
+
+exec "${@}"

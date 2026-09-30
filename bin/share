@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+#
+# Publica a app num túnel temporário do Cloudflare para alguém testar de fora.
+#
+# A ordem aqui não é arbitrária: o túnel sobe PRIMEIRO, para descobrirmos o
+# hostname sorteado, e só então o Rails sobe com esse host fixado em
+# config.hosts. Fazer ao contrário obrigaria a liberar *.trycloudflare.com com
+# curinga, o que reabre rebinding de DNS.
+#
+# As travas de segurança que acompanham isto estão em
+# config/environments/development.rb, no bloco SHARE_TUNNEL_HOST.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+if ! command -v cloudflared >/dev/null 2>&1; then
+  echo "cloudflared não está instalado. Instale com:  sudo pacman -S cloudflared"
+  exit 1
+fi
+
+LOG="$(mktemp -t denfis-tunnel.XXXXXX.log)"
+TUNNEL_PID=""
+
+cleanup() {
+  [[ -n "$TUNNEL_PID" ]] && kill "$TUNNEL_PID" 2>/dev/null || true
+  rm -f "$LOG"
+  echo
+  echo "Túnel encerrado. A URL morreu junto — ninguém mais alcança esta máquina."
+}
+trap cleanup EXIT INT TERM
+
+echo "Subindo o Postgres..."
+docker compose up -d >/dev/null
+
+until docker exec denfis-pg pg_isready -U denfis >/dev/null 2>&1; do sleep 1; done
+bin/rails db:prepare >/dev/null 2>&1
+
+echo "Abrindo o túnel..."
+cloudflared tunnel --url http://localhost:3000 --no-autoupdate >"$LOG" 2>&1 &
+TUNNEL_PID=$!
+
+# O cloudflared imprime a URL sorteada no log alguns segundos depois de subir.
+URL=""
+for _ in $(seq 1 60); do
+  URL="$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' "$LOG" | head -1 || true)"
+  [[ -n "$URL" ]] && break
+  kill -0 "$TUNNEL_PID" 2>/dev/null || { echo "cloudflared morreu:"; cat "$LOG"; exit 1; }
+  sleep 1
+done
+
+if [[ -z "$URL" ]]; then
+  echo "Não consegui descobrir a URL do túnel em 60s. Log:"
+  cat "$LOG"
+  exit 1
+fi
+
+HOST="${URL#https://}"
+
+cat <<INFO
+
+  ────────────────────────────────────────────────────────────
+   $URL
+  ────────────────────────────────────────────────────────────
+
+  Ativo enquanto este terminal estiver aberto. Ctrl+C encerra.
+
+  Travado para esta sessão: web-console desligado (era execução
+  de código remota), páginas de erro sem stack trace, e só este
+  host aceito.
+
+  A URL é sorteada e não indexada, mas é pública — quem a tiver
+  chega na tela de login. Crie a conta de quem vai testar com:
+
+    EMAIL=amigo@exemplo.com bin/rails denfis:acesso
+
+INFO
+
+SHARE_TUNNEL_HOST="$HOST" exec bin/dev

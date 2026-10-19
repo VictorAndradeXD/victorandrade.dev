@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+#
+# Dump de um banco do Postgres local (container denfis-pg), no formato custom
+# do pg_dump — o que o pg_restore lê e que permite restaurar tabela a tabela.
+#
+#   bin/backup                      # o banco do protótipo (bin/share)
+#   bin/backup denfis_development   # qualquer outro
+#
+# Os arquivos vão para fora do repositório de propósito: o repo é público, e um
+# `git add -A` distraído publicaria as finanças de alguém.
+set -euo pipefail
+
+DB="${1:-denfis_prototipo}"
+DIR="${DENFIS_BACKUP_DIR:-$HOME/Backups/denfis}"
+FILE="$DIR/$DB-$(date +%Y%m%d-%H%M%S).dump"
+
+mkdir -p "$DIR"
+chmod 700 "$DIR"
+
+if ! docker exec denfis-pg psql -U denfis -d postgres -Atc "select 1 from pg_database where datname = '$DB'" | grep -q 1; then
+  echo "O banco $DB não existe no container denfis-pg."
+  exit 1
+fi
+
+# Arquivo temporário e rename no fim: um dump interrompido nunca fica com
+# cara de backup válido.
+docker exec denfis-pg pg_dump -U denfis -Fc "$DB" >"$FILE.part"
+mv "$FILE.part" "$FILE"
+chmod 600 "$FILE"
+
+echo "Backup: $FILE ($(du -h "$FILE" | cut -f1))"

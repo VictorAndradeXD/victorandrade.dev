@@ -13,6 +13,11 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+# Os testadores gravam num banco só deles, não no de desenvolvimento. É este
+# banco que vai inteiro para o servidor quando ele existir (bin/backup gera o
+# dump; docs/prototipo.md explica a subida).
+export DENFIS_DATABASE_NAME="${DENFIS_DATABASE_NAME:-denfis_prototipo}"
+
 if ! command -v cloudflared >/dev/null 2>&1; then
   echo "cloudflared não está instalado. Instale com:  sudo pacman -S cloudflared"
   exit 1
@@ -33,7 +38,7 @@ echo "Subindo o Postgres..."
 docker compose up -d >/dev/null
 
 until docker exec denfis-pg pg_isready -U denfis >/dev/null 2>&1; do sleep 1; done
-bin/rails db:prepare >/dev/null 2>&1
+bin/rails prototipo:preparar >/dev/null
 
 echo "Abrindo o túnel..."
 cloudflared tunnel --url http://localhost:3000 --no-autoupdate >"$LOG" 2>&1 &
@@ -71,7 +76,10 @@ cat <<INFO
   A URL é sorteada e não indexada, mas é pública — quem a tiver
   chega na tela de login. Crie a conta de quem vai testar com:
 
-    EMAIL=amigo@exemplo.com bin/rails denfis:acesso
+    DENFIS_DATABASE_NAME=$DENFIS_DATABASE_NAME EMAIL=amigo@exemplo.com bin/rails denfis:acesso
+
+  (Com o DENFIS_DATABASE_NAME: sem ele a conta nasce no banco de
+  desenvolvimento, e o testador não consegue entrar.)
 
 INFO
 

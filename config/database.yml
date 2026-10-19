@@ -10,9 +10,12 @@ default: &default
   username: <%= ENV.fetch("DENFIS_DATABASE_USER", "denfis") %>
   password: <%= ENV.fetch("DENFIS_DATABASE_PASSWORD", "denfis") %>
 
+# DENFIS_DATABASE_NAME troca o banco sem mexer neste arquivo. É o que o
+# bin/share usa para gravar os testadores num banco só do protótipo, e não no
+# de desenvolvimento — assim o pg_dump dele sai limpo para subir no servidor.
 development:
   <<: *default
-  database: denfis_development
+  database: <%= ENV.fetch("DENFIS_DATABASE_NAME", "denfis_development") %>
 
 test:
   <<: *default
@@ -21,4 +24,11 @@ test:
 production:
   <<: *default
   database: denfis_production
+  password: <%= ENV["DENFIS_DATABASE_PASSWORD"] %>
+
+# Versão de Windows (packaging/windows): um Postgres portátil por instalação,
+# na porta e com a senha que o lançador sorteia no primeiro uso.
+desktop:
+  <<: *default
+  database: denfis_desktop
   password: <%= ENV["DENFIS_DATABASE_PASSWORD"] %>

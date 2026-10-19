@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+#
+# Acrescenta os dados de um backup da versão de Windows a um banco que já tem
+# outros usuários — o do servidor, depois que o do protótipo subiu para lá.
+#
+#   bin/mesclar-backup denfis-backup.dump                        # local, banco do protótipo
+#   CONTAINER=denfis-db DB=denfis_production ./mesclar-backup x.dump   # no VPS
+#
+# Funciona sem remapear chave nenhuma porque a instalação de Windows numera
+# tudo a partir de 1 bilhão (lib/tasks/prototipo.rake). Fica de fora o que não é
+# dado de usuário: as tabelas fiscais (o destino já tem as dele), sessões de
+# login, os metadados do Rails e os contadores das sequências — o destino
+# continua numerando na faixa baixa dele.
+#
+# Os dois bancos precisam estar na mesma versão de schema: atualize o servidor
+# e abra o Windows uma vez na versão nova antes de gerar o backup.
+set -euo pipefail
+
+DUMP="${1:?Uso: bin/mesclar-backup arquivo.dump}"
+CONTAINER="${CONTAINER:-denfis-pg}"
+DB="${DB:-denfis_prototipo}"
+PGUSER="${PGUSER:-denfis}"
+
+[[ -f "$DUMP" ]] || { echo "Arquivo não encontrado: $DUMP"; exit 1; }
+
+REMOTE="/tmp/mesclar-$$.dump"
+docker cp "$DUMP" "$CONTAINER:$REMOTE"
+trap 'docker exec "$CONTAINER" rm -f "$REMOTE" "$REMOTE.lista"' EXIT
+
+# Conflito de e-mail aborta tudo logo aqui, antes de gravar qualquer linha. (O
+# índice único também barraria, mas com um erro do Postgres em vez de um aviso.)
+# A posição da coluna sai do cabeçalho do COPY: ela varia com a ordem em que as
+# migrations rodaram.
+EMAILS="$(docker exec "$CONTAINER" sh -c "pg_restore --data-only -t users -f - '$REMOTE'" \
+  | awk -F'\t' '
+      /^COPY public.users / {
+        sub(/^[^(]*\(/, ""); sub(/\).*/, ""); n = split($0, cols, ", ")
+        for (i = 1; i <= n; i++) if (cols[i] == "email_address") col = i
+        on = 1; next
+      }
+      /^\\\.$/ { on = 0 }
+      on { print $col }')"
+for email in $EMAILS; do
+  if docker exec "$CONTAINER" psql -U "$PGUSER" -d "$DB" -Atc \
+       "select 1 from users where email_address = '${email//\'/\'\'}'" | grep -q 1; then
+    echo "O e-mail $email já existe em $DB. Nada foi gravado."
+    exit 1
+  fi
+done
+
+# Lista do que restaurar: só TABLE DATA, e só das tabelas de usuário.
+docker exec "$CONTAINER" sh -c "pg_restore -l '$REMOTE' \
+  | grep ' TABLE DATA ' \
+  | grep -Ev ' (schema_migrations|ar_internal_metadata|sessions|tax_[a-z_]+) ' \
+  > '$REMOTE.lista'"
+
+echo "Tabelas que entram:"
+docker exec "$CONTAINER" sh -c "awk '{print \"  \" \$(NF-1)}' '$REMOTE.lista'"
+
+# --single-transaction: ou entra tudo, ou nada. --disable-triggers desliga as
+# FKs durante a carga, que não vem em ordem de dependência.
+docker exec "$CONTAINER" pg_restore -U "$PGUSER" -d "$DB" \
+  --data-only --disable-triggers --single-transaction \
+  -L "$REMOTE.lista" "$REMOTE"
+
+echo "Pronto: dados de $DUMP somados a $DB."

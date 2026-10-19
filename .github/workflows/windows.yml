@@ -1,0 +1,177 @@
+# Gera o instalador do Denfis para Windows e o testa numa máquina Windows
+# limpa. Disparo manual (Actions → Instalador Windows → Run workflow) ou por tag
+# windows-v*. O .exe sai como artefato do run:
+#
+#   gh run download --name Denfis-Setup
+#
+# As gems nativas (puma, argon2, bootsnap...) só compilam num Windows de
+# verdade, por isso o build é aqui e não na máquina de desenvolvimento.
+name: Instalador Windows
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["windows-v*"]
+
+permissions:
+  contents: read
+
+env:
+  # Mesmo major do servidor (postgres:18 no docker-compose e no Kamal): o
+  # backup do Windows restaura lá sem conversão. O hash trava o arquivo exato
+  # que foi conferido; trocar de versão exige trocar os dois juntos.
+  PG_VERSION: "18.6-1"
+  PG_SHA256: "fbe23da234ee31547bf8a36d29dfd81e82b849df2d2b78d2eecb43d360252f8c"
+
+jobs:
+  build:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v5
+
+      # Versão do .ruby-version. É este Ruby que vai dentro do instalador.
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: false
+
+      - name: Gems de produção, compiladas para Windows
+        run: |
+          bundle config set --local deployment true
+          bundle config set --local without "development test"
+          bundle config set --local path vendor/bundle
+          bundle install --jobs 4
+
+      - name: Assets pré-compilados
+        env:
+          RAILS_ENV: desktop
+          SECRET_KEY_BASE_DUMMY: "1"
+        run: ruby bin/rails assets:precompile
+
+      - name: Postgres portátil
+        run: |
+          Invoke-WebRequest "https://get.enterprisedb.com/postgresql/postgresql-$env:PG_VERSION-windows-x64-binaries.zip" -OutFile pg.zip
+          $hash = (Get-FileHash pg.zip -Algorithm SHA256).Hash.ToLower()
+          if ($hash -ne $env:PG_SHA256) { throw "SHA-256 do Postgres não confere: $hash" }
+          # O zip traz pgAdmin, documentação e headers: 900 MB que o app não usa.
+          tar -xf pg.zip --exclude "pgsql/pgAdmin 4" --exclude "pgsql/doc" --exclude "pgsql/include" --exclude "pgsql/StackBuilder" --exclude "pgsql/symbols"
+
+      - name: Montar dist\Denfis
+        run: |
+          $dist = "dist\Denfis"
+          New-Item -ItemType Directory -Force "$dist\app" | Out-Null
+
+          # Ruby: o mesmo que compilou as gems, com o bundler do Gemfile.lock.
+          $prefix = ruby -e "print RbConfig::CONFIG['prefix']"
+          Copy-Item -Recurse $prefix "$dist\ruby"
+          Remove-Item -Recurse -Force "$dist\ruby\share\ri", "$dist\ruby\share\doc", "$dist\ruby\include" -ErrorAction SilentlyContinue
+
+          # Postgres. Ele é compilado com MSVC e precisa do runtime do Visual
+          # C++, que o zip não traz; vai junto, ao lado dos .exe, para não
+          # depender de a máquina ter o redistribuível instalado.
+          Move-Item pgsql "$dist\pgsql"
+          Get-ChildItem "$dist\pgsql\lib\*.lib", "$dist\pgsql\lib\*.a" -ErrorAction SilentlyContinue | Remove-Item
+          foreach ($dll in "vcruntime140.dll", "vcruntime140_1.dll", "msvcp140.dll") {
+            Copy-Item "$env:SystemRoot\System32\$dll" "$dist\pgsql\bin\"
+          }
+
+          # App: só o que está versionado, mais o que o build gerou.
+          git archive --format=tar -o app.tar HEAD
+          tar -xf app.tar -C "$dist\app"
+          Remove-Item -Recurse -Force "$dist\app\test", "$dist\app\docs", "$dist\app\packaging", "$dist\app\.github", "$dist\app\.kamal" -ErrorAction SilentlyContinue
+          Copy-Item -Recurse vendor\bundle "$dist\app\vendor\bundle"
+          Copy-Item -Recurse .bundle "$dist\app\.bundle"
+          Copy-Item -Recurse public\assets "$dist\app\public\assets"
+          Remove-Item -Recurse -Force "$dist\app\vendor\bundle\ruby\*\cache"
+          Get-ChildItem "$dist\app\vendor\bundle" -Recurse -Include *.o | Remove-Item
+
+          Copy-Item packaging\windows\denfis.rb, packaging\windows\denfis.ico $dist
+          "{0:N0} MB em dist\Denfis" -f ((Get-ChildItem $dist -Recurse -File | Measure-Object Length -Sum).Sum / 1MB)
+
+      - name: Compilar o instalador
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress }
+          $version = "$(Get-Date -Format 'yyyy.M.d').$env:GITHUB_RUN_NUMBER"
+          & $iscc "/DAppVersion=$version" packaging\windows\denfis.iss
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Denfis-Setup
+          path: dist/Denfis-Setup.exe
+          retention-days: 30
+
+  # Instala numa máquina nova e faz o primeiro acesso inteiro. Pastas com
+  # acento de propósito (o usuário do Windows chama "João"); PATH reduzido ao
+  # do sistema, para uma DLL que só existe no runner não passar despercebida.
+  teste:
+    needs: build
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: packaging/windows
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: Denfis-Setup
+
+      - name: Instalar, ligar e usar
+        run: |
+          $app   = "C:\Instalação Teste\Denfis"
+          $dados = "C:\Usuários\João\Denfis"
+          $ruby  = "$app\ruby\bin\ruby.exe"
+
+          $setup = Start-Process .\Denfis-Setup.exe -PassThru -Wait -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/EMAIL=teste@exemplo.com', '/CONTABIL=1', "/DIR=`"$app`"", '/LOG=setup.log'
+          if ($setup.ExitCode) { Get-Content setup.log -Tail 40; throw "Instalador saiu com $($setup.ExitCode)" }
+
+          # O instalador grava o primeiro acesso no %LOCALAPPDATA% de verdade;
+          # os dados do teste vão para a pasta com acento.
+          New-Item -ItemType Directory -Force $dados | Out-Null
+          Copy-Item "$env:LOCALAPPDATA\Denfis\primeiro-acesso.txt" $dados
+          $env:DENFIS_DADOS   = $dados
+          $env:DENFIS_BACKUPS = "$dados\Backups"
+          $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
+
+          function Ligar($rotulo) {
+            $p = Start-Process $ruby -PassThru -NoNewWindow -ArgumentList "`"$app\denfis.rb`"", '--sem-navegador', '--sem-pausa' -RedirectStandardOutput "$rotulo.out" -RedirectStandardError "$rotulo.err"
+            for ($i = 0; $i -lt 300; $i++) {
+              try { Invoke-WebRequest http://127.0.0.1:3210/up -UseBasicParsing -TimeoutSec 2 | Out-Null; break } catch { Start-Sleep 1 }
+              if ($p.HasExited) { break }
+            }
+            Get-Content "$rotulo.out"
+            if ($i -ge 300 -or $p.HasExited) { Get-Content "$rotulo.err"; throw "O Denfis não ligou ($rotulo)" }
+            "ligou em ${i}s"
+          }
+
+          Ligar "primeiro"
+          & $ruby packaging\windows\teste_fumaca.rb $dados 3210
+          if ($LASTEXITCODE) { throw "Teste de fumaça falhou" }
+
+          & $ruby "$app\denfis.rb" backup --sem-pausa
+          $dump = Get-ChildItem "$dados\Backups\*.dump" | Sort-Object Name | Select-Object -Last 1
+          $tabelas = & "$app\pgsql\bin\pg_restore.exe" -l $dump.FullName
+          if (-not ($tabelas | Select-String "TABLE DATA public users")) { throw "Backup sem a tabela users" }
+          "backup ok: $($dump.Name)"
+
+          & $ruby "$app\denfis.rb" parar --sem-pausa
+          Start-Sleep 3
+          if (Get-NetTCPConnection -LocalPort 3210, 54329 -State Listen -ErrorAction SilentlyContinue) { throw "Algo ficou ligado depois do parar" }
+
+          # Segundo início, já com dados: backup automático e migrations.
+          Ligar "segundo"
+          $backups = (Get-ChildItem "$dados\Backups\*.dump").Count
+          if ($backups -lt 2) { throw "O segundo início não fez backup automático ($backups)" }
+          & $ruby "$app\denfis.rb" parar --sem-pausa
+          "Tudo certo."
+
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-do-teste
+          path: |
+            setup.log
+            *.out
+            *.err
+            C:\Usuários\João\Denfis\log\
+          if-no-files-found: ignore

@@ -4,6 +4,8 @@
     <title><%= content_for(:title) || "Denfis" %></title>
     <meta name="application-name" content="Denfis">
     <%= render "shared/head" %>
+    <%# Instalável no celular: só as telas do app, não o portfólio. %>
+    <link rel="manifest" href="<%= pwa_manifest_path(format: :json) %>">
   </head>
 
   <body class="min-h-screen">

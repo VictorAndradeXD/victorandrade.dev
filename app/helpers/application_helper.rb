@@ -69,7 +69,9 @@ module ApplicationHelper
   # Link de navegação que se destaca na seção ativa.
   def nav_link_to(name, path)
     classes = current_page?(path) ? "text-ink bg-elevated" : "text-muted hover:text-ink"
-    link_to name, path, class: "px-3 py-1.5 rounded-lg transition-colors #{classes}"
+    # nowrap: no celular a faixa de links rola na horizontal, e sem isto o
+    # flex espreme "Visão geral" em duas linhas em vez de deixá-la rolar.
+    link_to name, path, class: "px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors #{classes}"
   end
 
   # Contas que o usuário pode escolher num lançamento. Memoizado porque a mesma
@@ -114,10 +116,12 @@ module ApplicationHelper
   end
 
   # Botões de ação de uma linha de lista: só o ícone, com rótulo para leitor de
-  # tela e title para quem passa o mouse.
+  # tela e title para quem passa o mouse. Abaixo de sm o padding cresce: 28px
+  # de alvo serve ao mouse, mas no dedo os três ícones lado a lado viram erro
+  # de toque. O max-sm deixa a medida de tablet e desktop exatamente como era.
   def icon_button_classes(tone = :neutral)
     hover = tone == :danger ? "hover:text-expense" : "hover:text-ink"
-    "text-muted #{hover} transition-colors p-1.5 rounded-lg hover:bg-elevated"
+    "text-muted #{hover} transition-colors p-1.5 max-sm:p-2 rounded-lg hover:bg-elevated"
   end
 
   private

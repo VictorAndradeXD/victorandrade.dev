@@ -12,8 +12,10 @@
   <% if @rules.any? %>
     <ul class="divide-y divide-hairline">
       <% @rules.each do |rule| %>
-        <li class="py-3 first:pt-0 last:pb-0 flex items-center gap-3">
-          <div class="min-w-0 flex-1">
+        <%# Mesma quebra da lista de lançamentos: no celular valor e ações
+            descem para a linha de baixo e a descrição fica com a largura toda. %>
+        <li class="py-3 first:pt-0 last:pb-0 flex items-center gap-3 max-sm:flex-wrap max-sm:gap-y-1.5">
+          <div class="min-w-0 flex-1 max-sm:basis-full">
             <p class="font-medium truncate">
               <%= rule.description %>
               <% unless rule.active? %>
@@ -29,7 +31,7 @@
             </p>
           </div>
 
-          <span class="tabular-nums font-medium <%= rule.expense? ? 'text-expense' : 'text-income' %>">
+          <span class="tabular-nums font-medium max-sm:mr-auto <%= rule.expense? ? 'text-expense' : 'text-income' %>">
             <%= money(rule.amount) %>
           </span>
 

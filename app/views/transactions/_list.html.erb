@@ -1,8 +1,12 @@
 <ul class="divide-y divide-hairline">
   <% transactions.each do |transaction| %>
     <li class="py-3 first:pt-0 last:pb-0">
-      <div class="flex items-center gap-3">
-        <div class="min-w-0 flex-1">
+      <%# No celular a descrição ganha a linha inteira e valor + ações descem
+          para a de baixo. Numa linha só, os três ícones e o valor deixavam
+          uns 60px para o texto: "Manute…", e os metadados empilhados um por
+          linha. A partir de sm volta a ser uma linha só. %>
+      <div class="flex items-center gap-3 max-sm:flex-wrap max-sm:gap-y-1.5">
+        <div class="min-w-0 flex-1 max-sm:basis-full">
           <%# turbo_frame _top porque esta lista também é usada dentro do modal do dia. %>
           <p class="truncate font-medium">
             <%= link_to transaction.description, transaction, data: { turbo_frame: "_top" },
@@ -22,7 +26,7 @@
           </p>
         </div>
 
-        <span class="tabular-nums font-medium <%= amount_color(transaction.signed_amount) %>">
+        <span class="tabular-nums font-medium max-sm:mr-auto <%= amount_color(transaction.signed_amount) %>">
           <%= money(transaction.signed_amount, signed: true) %>
         </span>
 

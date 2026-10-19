@@ -38,5 +38,11 @@ Rails.application.routes.draw do
     resource :statement, only: :show, path: "extrato"
   end
 
+  # App instalável no celular (PWA). O manifest aponta para /app, que manda
+  # cada pessoa para o módulo que ela pode abrir.
+  get "app", to: "launch#show", as: :app_launch
+  get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+  get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+
   get "up" => "rails/health#show", as: :rails_health_check
 end

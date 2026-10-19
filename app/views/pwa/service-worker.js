@@ -1,26 +1,32 @@
-// Add a service worker for processing Web Push notifications:
+// Service worker do app instalado no celular.
 //
-// self.addEventListener("push", async (event) => {
-//   const { title, options } = await event.data.json()
-//   event.waitUntil(self.registration.showNotification(title, options))
-// })
+// Só a página offline vai para o cache. As telas do app nunca: são finanças
+// de alguém, e quem abrir o app sem internet num celular emprestado não deve
+// ver o extrato que ficou guardado. Sem rede, toda navegação cai na mesma
+// página avisando que falta conexão.
 //
-// self.addEventListener("notificationclick", function(event) {
-//   event.notification.close()
-//   event.waitUntil(
-//     clients.matchAll({ type: "window" }).then((clientList) => {
-//       for (let i = 0; i < clientList.length; i++) {
-//         let client = clientList[i]
-//         let clientPath = (new URL(client.url)).pathname
-//
-//         if (clientPath == event.notification.data.path && "focus" in client) {
-//           return client.focus()
-//         }
-//       }
-//
-//       if (clients.openWindow) {
-//         return clients.openWindow(event.notification.data.path)
-//       }
-//     })
-//   )
-// })
+// Ao mudar offline.html, troque a versão do CACHE para os celulares baixarem
+// a nova.
+const CACHE = "denfis-offline-v2"
+const OFFLINE_URL = "/offline.html"
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.add(OFFLINE_URL)))
+  self.skipWaiting()
+})
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
+      .then(() => self.clients.claim())
+  )
+})
+
+// Requisições que não são navegação (CSS, JS, Turbo) seguem direto para a
+// rede, sem passar por aqui.
+self.addEventListener("fetch", (event) => {
+  if (event.request.mode !== "navigate") return
+
+  event.respondWith(fetch(event.request).catch(() => caches.match(OFFLINE_URL)))
+})

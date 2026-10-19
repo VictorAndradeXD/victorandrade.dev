@@ -20,7 +20,9 @@
     </p>
   </div>
 <% else %>
-  <div class="mt-8 grid gap-4 lg:grid-cols-2">
+  <%# grid-cols-1 é minmax(0, 1fr). Sem ele a trilha implícita é `auto`, cresce
+      até a largura do nome truncado e o cartão vaza da tela no celular. %>
+  <div class="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
     <% @companies.each do |company| %>
       <% window = @windows[company] %>
       <% status = fator_r_status(window) %>

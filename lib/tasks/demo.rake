@@ -6,7 +6,7 @@ namespace :denfis do
     # Ordem importa: Account tem restrict_with_error enquanto houver lançamento.
     user.transactions.destroy_all
     user.installment_plans.destroy_all
-    user.recurring_rules.destroy_all
+    user.budget_presets.delete_all
     user.accounts.destroy_all
     user.tags.destroy_all
 
@@ -90,23 +90,11 @@ namespace :denfis do
     create.(description: "IPVA",        amount: 1_430.00, occurred_on: prev + 10, account: accounts[:checking], tag: tags[:transporte])
     create.(description: "Supermercado", amount: 812.44,  occurred_on: prev + 17, account: accounts[:nubank],   tag: tags[:alimentacao])
 
-    # ---- Recorrências: uma de cada frequência, uma pausada, uma com fim ----
-    user.recurring_rules.create!(kind: "expense", description: "Aluguel", amount: 2_200, frequency: "monthly",
-                                 day_of_month: 5, starts_on: month - 6.months, account: accounts[:checking], tag: tags[:moradia])
-    user.recurring_rules.create!(kind: "expense", description: "Plano de saúde", amount: 648, frequency: "monthly",
-                                 day_of_month: 15, starts_on: month - 1.year, account: accounts[:checking], tag: tags[:saude])
-    user.recurring_rules.create!(kind: "income", description: "Salário", amount: 9_850, frequency: "monthly",
-                                 day_of_month: 4, starts_on: month - 2.years, account: accounts[:checking], tag: tags[:salario])
-    user.recurring_rules.create!(kind: "expense", description: "Faxina semanal", amount: 180, frequency: "weekly",
-                                 starts_on: month, account: accounts[:wallet])
-    user.recurring_rules.create!(kind: "expense", description: "IPTU", amount: 1_890, frequency: "yearly",
-                                 starts_on: Date.new(month.year, 1, 10), account: accounts[:checking], tag: tags[:moradia])
-    user.recurring_rules.create!(kind: "expense", description: "Academia (pausada)", amount: 129.90, frequency: "monthly",
-                                 day_of_month: 8, starts_on: month - 3.months, account: accounts[:checking],
-                                 tag: tags[:saude], active: false)
-    user.recurring_rules.create!(kind: "expense", description: "Curso de inglês", amount: 380, frequency: "monthly",
-                                 day_of_month: 20, starts_on: month - 2.months, ends_on: month + 4.months,
-                                 account: accounts[:checking], tag: tags[:educacao])
+    # ---- Auto preenchimento do orçamento: o que se repete todo mês ----
+    { "Aluguel" => [ "fixed_costs", 2_200 ], "Plano de saúde" => [ "fixed_costs", 648 ],
+      "Faxina" => [ "comfort", 720 ], "Curso de inglês" => [ "knowledge", 380 ] }.each do |description, (category, amount)|
+      user.budget_presets.create!(description: description, category: category, amount: amount)
+    end
 
     # ---- Parcelamentos: divisão exata, inexata e prazo longo ----
     user.installment_plans.create!(kind: "expense", description: "Notebook Dell", total_amount: 6_000,
@@ -119,6 +107,6 @@ namespace :denfis do
     puts "Contas: #{user.accounts.count} | Tags: #{user.tags.count}"
     puts "Lançamentos: #{user.transactions.count} (#{user.transactions.income.count} entradas, #{user.transactions.expense.count} saídas)"
     puts "Com detalhamento: #{user.transactions.where('items_total > 0').count}"
-    puts "Recorrências: #{user.recurring_rules.count} | Parcelamentos: #{user.installment_plans.count}"
+    puts "Auto preenchimento: #{user.budget_presets.count} | Parcelamentos: #{user.installment_plans.count}"
   end
 end

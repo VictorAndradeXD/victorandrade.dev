@@ -13,7 +13,7 @@
   <% end %>
 
   <div class="card space-y-5">
-    <div class="grid gap-4 sm:grid-cols-2">
+    <div class="grid gap-4 sm:grid-cols-3">
       <div>
         <%= form.label :kind, "Tipo", class: "label" %>
         <%= form.select :kind, [ [ "Saída", "expense" ], [ "Entrada", "income" ] ] %>
@@ -23,6 +23,8 @@
         <%= form.label :occurred_on, "Data", class: "label" %>
         <%= form.date_field :occurred_on %>
       </div>
+
+      <%= render "shared/budget_category_field", form: form %>
     </div>
 
     <div>

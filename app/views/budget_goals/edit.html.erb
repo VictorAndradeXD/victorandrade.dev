@@ -1,0 +1,90 @@
+<% content_for :title, "Minhas metas" %>
+<%
+  month_param = @budget.month.strftime("%Y-%m")
+  total = @goal_set.total
+  segments = Budget::CATEGORIES.map { [ it.key, it.name, @goal_set.percents[it.key].to_i, it.color ] }
+%>
+
+<%= render "budgets/tabs", month: @budget.month, current: :goals %>
+
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight">Metas</h1>
+  <p class="text-muted text-sm mt-1">Defina quanto da renda vai para cada meta. A soma não pode passar de 100%.</p>
+</div>
+
+<%= form_with url: budget_goals_path, method: :patch, scope: :budget_goals,
+      data: { controller: "budget-goals", action: "input->budget-goals#refresh",
+              budget_goals_income_value: @budget.income.to_f,
+              budget_goals_defaults_value: Budget.default_percents.to_json } do |form| %>
+  <%= hidden_field_tag :month, month_param %>
+
+  <% if @goal_set.errors.any? %>
+    <div class="mb-6"><%= render "shared/errors", record: @goal_set %></div>
+  <% end %>
+
+  <div class="grid gap-6 lg:grid-cols-12">
+    <section class="card lg:col-span-4 flex flex-col items-center text-center">
+      <p class="text-2xl font-semibold">Total: <span data-budget-goals-target="total" class="tabular-nums"><%= total %>%</span></p>
+
+      <%# Os dois avisos saem do servidor no estado certo e o controller só
+          alterna o `hidden` — sem JavaScript a página continua dizendo a verdade. %>
+      <p data-budget-goals-target="excessAlert" role="alert" <%= "hidden" unless total > 100 %>
+         class="mt-2 text-sm font-medium text-expense max-w-64">
+        A soma passou de 100% em <span data-budget-goals-target="excess"><%= [ total - 100, 0 ].max %></span>
+        ponto(s). Reduza outras metas para não comprometer o orçamento.
+      </p>
+      <p data-budget-goals-target="remainingNote" <%= "hidden" unless total < 100 %>
+         class="mt-2 text-sm text-amber-400 max-w-64">
+        Faltam <span data-budget-goals-target="remaining"><%= [ 100 - total, 0 ].max %></span>% para distribuir.
+      </p>
+
+      <div class="relative w-44 h-44 my-6">
+        <%= render "budgets/donut", segments: segments, total: [ total, 100 ].max, live: true %>
+      </div>
+
+      <ul class="flex flex-wrap justify-center gap-x-4 gap-y-1.5 text-xs text-muted">
+        <% Budget::CATEGORIES.each do |category| %>
+          <li class="inline-flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full" style="background: <%= category.color %>"></span><%= category.name %>
+          </li>
+        <% end %>
+      </ul>
+
+      <p class="text-xs text-muted mt-6">
+        Valores em reais calculados sobre a renda de <%= month_label(@budget.month) %>:
+        <span class="text-ink tabular-nums"><%= money(@budget.income) %></span>.
+      </p>
+    </section>
+
+    <section class="card lg:col-span-8 space-y-6">
+      <% Budget::CATEGORIES.each do |category| %>
+        <% value = @goal_set.percents[category.key].to_i %>
+        <div>
+          <div class="flex items-baseline justify-between gap-3 mb-2">
+            <label for="budget_goals_<%= category.key %>" class="font-medium flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full" style="background: <%= category.color %>"></span>
+              <%= category.name %>
+            </label>
+            <span class="text-sm">
+              <span data-budget-goals-target="percent" data-key="<%= category.key %>" class="font-semibold tabular-nums"><%= value %>%</span>
+              <span class="text-muted tabular-nums ml-2" data-budget-goals-target="amount" data-key="<%= category.key %>">
+                <%= money(@budget.income * value / 100) %>
+              </span>
+            </span>
+          </div>
+          <%= form.range_field category.key, value: value, min: 0, max: 100, step: 1,
+                id: "budget_goals_#{category.key}", style: "accent-color: #{category.color}",
+                data: { budget_goals_target: "slider", key: category.key } %>
+          <div class="flex justify-between text-[11px] text-muted mt-1"><span>0%</span><span>100%</span></div>
+        </div>
+      <% end %>
+    </section>
+  </div>
+
+  <div class="flex flex-wrap items-center justify-center gap-3 mt-6">
+    <button type="button" class="btn-ghost text-sm min-w-40" data-action="budget-goals#reset">Resetar valores</button>
+    <%= form.submit "Salvar", class: "btn-primary text-sm min-w-40 disabled:opacity-40 disabled:cursor-not-allowed",
+          disabled: total > 100, data: { budget_goals_target: "submit" } %>
+    <%= link_to "Cancelar", budget_path(month: month_param), class: "btn-ghost text-sm" %>
+  </div>
+<% end %>

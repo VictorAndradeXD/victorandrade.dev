@@ -64,7 +64,7 @@ pt-BR:
         summary: Um gerenciador de finanças pessoais dark-first em Rails 8 — e um dos módulos do site que você está lendo agora.
         highlights:
           - Fatura de cartão modelada como um lançamento pai quebrado em linhas de detalhe, com o restante sem descrição e a soma impedida de ultrapassar o pai.
-          - Recorrências e parcelamentos, calendário de saldo por dia e um extrato imprimível com folha de estilo própria para papel.
+          - Orçamento doméstico com metas por categoria de gasto, parcelamentos, calendário de saldo por dia e um extrato imprimível com folha de estilo própria para papel.
           - Rails 8 com Hotwire e import maps — sem etapa de build para JavaScript — sobre PostgreSQL, com hash de senha em Argon2id.
           - Tema trocado em tempo de execução por custom properties do CSS, então claro e escuro alternam sem recompilar o Tailwind.
 

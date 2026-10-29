@@ -27,7 +27,7 @@ class InstallmentPlansController < ApplicationController
   private
     def plan_params
       params.expect(installment_plan: [
-        :kind, :description, :total_amount, :installments_count, :first_due_on, :account_id, :tag_id
+        :kind, :description, :total_amount, :installments_count, :first_due_on, :account_id, :tag_id, :budget_category
       ])
     end
 end

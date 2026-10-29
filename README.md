@@ -15,8 +15,9 @@ Gestão financeira para uso próprio, com duas contas independentes.
   pode ser aberta em "gasolina R$ 1.000", deixando R$ 2.000 sem descrição. A
   soma das partes nunca ultrapassa o total — validado no modelo e garantido no
   banco por uma check constraint.
-- **Recorrências** (aluguel, plano de saúde) mensais, semanais ou anuais. A
-  geração é idempotente: reexecutar não duplica lançamento.
+- **Orçamento doméstico.** Metas em % da renda (custos fixos, conforto, prazeres…),
+  comparadas com o gasto do mês, e um auto preenchimento que lança de uma vez
+  os gastos que se repetem — aluguel, luz, plano de saúde — sem duplicar.
 - **Parcelamentos.** A sobra do arredondamento vai na primeira parcela, então a
   soma das parcelas bate com o total exato.
 - **Dashboard** com resultado do período, calendário de saldo diário (cada dia
@@ -67,7 +68,6 @@ Outros comandos:
 
 ```bash
 bin/rails 'denfis:create_user[email@exemplo.com]'   # cria o segundo usuário
-bin/rails denfis:materialize_recurring              # gera as recorrências do mês
 bin/rubocop                                          # lint
 ```
 

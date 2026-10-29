@@ -1,0 +1,15 @@
+<%# As duas abas do orçamento, como na referência: o painel do mês e a edição das metas. %>
+<% tabs = [ [ "Orçamento doméstico", budget_path(month: month.strftime("%Y-%m")), :budget ],
+            [ "Minhas metas", edit_budget_goals_path(month: month.strftime("%Y-%m")), :goals ] ] %>
+<%# A linha de baixo é sombra interna, não border: o sublinhado da aba ativa
+    pinta por cima dela sem sair da caixa. Com border + -mb-px a aba passava
+    1px da altura, e o overflow-x-auto ganhava uma rolagem vertical junto. %>
+<nav class="flex gap-1 mb-7 overflow-x-auto shadow-[inset_0_-1px_0_var(--color-hairline)]" aria-label="Orçamento">
+  <% tabs.each do |(label, path, key)| %>
+    <% active = key == current %>
+    <%= link_to label, path,
+          aria: { current: (active ? "page" : nil) },
+          class: "px-4 py-2.5 text-sm uppercase tracking-wide whitespace-nowrap border-b-2 transition-colors " \
+                 "#{active ? 'border-brand text-ink font-medium' : 'border-transparent text-muted hover:text-ink'}" %>
+  <% end %>
+</nav>

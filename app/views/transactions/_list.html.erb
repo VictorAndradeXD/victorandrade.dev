@@ -23,6 +23,13 @@
                 <%= transaction.tag.name %>
               </span>
             <% end %>
+            <% if (category = Budget.category(transaction.budget_category)) %>
+              <span>·</span>
+              <span class="inline-flex items-center gap-1" title="Meta do orçamento">
+                <span class="w-2 h-2 rounded-sm" style="background: <%= category.color %>"></span>
+                <%= category.name %>
+              </span>
+            <% end %>
           </p>
         </div>
 

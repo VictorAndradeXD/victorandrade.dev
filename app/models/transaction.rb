@@ -1,10 +1,11 @@
 class Transaction < ApplicationRecord
   KINDS = %w[income expense].freeze
 
+  include BudgetCategorized
+
   belongs_to :user
   belongs_to :account
   belongs_to :tag,              optional: true
-  belongs_to :recurring_rule,   optional: true
   belongs_to :installment_plan, optional: true
 
   # `items` é o detalhamento por dentro do lançamento: uma fatura de cartão de

@@ -57,7 +57,7 @@ class TransactionsController < ApplicationController
 
     def transaction_params
       params.expect(transaction: [
-        :kind, :description, :amount, :occurred_on, :account_id, :tag_id,
+        :kind, :description, :amount, :occurred_on, :account_id, :tag_id, :budget_category,
         items_attributes: [ [ :id, :description, :amount, :_destroy ] ]
       ])
     end

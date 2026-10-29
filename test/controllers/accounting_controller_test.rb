@@ -61,7 +61,7 @@ class AccountingControllerTest < ActionDispatch::IntegrationTest
     sign_in_as @contadora
 
     [ transactions_path, accounts_path, tags_path, statement_path,
-      recurring_rules_path, installment_plans_path ].each do |path|
+      budget_path, installment_plans_path ].each do |path|
       get path
       assert_redirected_to contabil_path, "#{path} deixou a contadora passar"
     end

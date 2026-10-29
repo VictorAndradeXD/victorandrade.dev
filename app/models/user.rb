@@ -22,9 +22,11 @@ class User < ApplicationRecord
   # antes de transactions, apagar um usuário com histórico falharia calado.
   has_many :transactions,      dependent: :destroy
   has_many :installment_plans, dependent: :destroy
-  has_many :recurring_rules,   dependent: :destroy
   has_many :accounts,          dependent: :destroy
   has_many :tags,              dependent: :destroy
+  has_many :budget_goals,      dependent: :delete_all
+  has_many :budget_incomes,    dependent: :delete_all
+  has_many :budget_presets,    dependent: :delete_all
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 

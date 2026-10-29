@@ -6,9 +6,13 @@
   <%= render "shared/errors", record: @plan %>
 
   <div class="card space-y-5">
-    <div>
-      <%= form.label :description, "Descrição", class: "label" %>
-      <%= form.text_field :description, placeholder: "Notebook", autofocus: true %>
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div class="sm:col-span-2">
+        <%= form.label :description, "Descrição", class: "label" %>
+        <%= form.text_field :description, placeholder: "Notebook", autofocus: true %>
+      </div>
+
+      <%= render "shared/budget_category_field", form: form %>
     </div>
 
     <div class="grid gap-4 sm:grid-cols-3">

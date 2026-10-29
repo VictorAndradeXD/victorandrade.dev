@@ -1,0 +1,102 @@
+<%#
+  Miolo do auto preenchimento: abas por meta, os gastos cadastrados da meta
+  escolhida e o formulário de cadastro. Vive num turbo-frame — trocar de aba,
+  cadastrar, editar ou excluir troca só este pedaço da tela.
+%>
+<%
+  month_param = budget.month.strftime("%Y-%m")
+  all_presets = current_user.budget_presets.ordered.to_a
+  presets = all_presets.select { it.category == category.key }
+  row = budget.rows.find { it.category == category }
+  presets_total = presets.sum(&:amount)
+%>
+<%= turbo_frame_tag "budget_presets" do %>
+  <% if all_presets.any? %>
+    <details class="mb-5 group">
+      <summary class="cursor-pointer select-none text-sm font-medium inline-flex items-center gap-1.5">
+        Ver gastos <span class="text-muted font-normal">(<%= all_presets.size %>, <%= money(all_presets.sum(&:amount)) %>)</span>
+        <span class="text-muted transition-transform group-open:rotate-180">⌄</span>
+      </summary>
+      <ul class="mt-3 grid gap-x-8 gap-y-1.5 sm:grid-cols-2 text-sm">
+        <% all_presets.each do |preset| %>
+          <% preset_category = Budget.category(preset.category) %>
+          <li class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full shrink-0" style="background: <%= preset_category.color %>"></span>
+            <span class="truncate"><%= preset.description %></span>
+            <span class="text-xs text-muted truncate"><%= preset_category.name %></span>
+            <span class="ml-auto tabular-nums"><%= money(preset.amount) %></span>
+          </li>
+        <% end %>
+      </ul>
+    </details>
+  <% end %>
+
+  <nav class="flex gap-1.5 overflow-x-auto pb-1 mb-5" aria-label="Metas">
+    <% Budget::CATEGORIES.each do |tab| %>
+      <% active = tab == category %>
+      <%= link_to budget_path(month: month_param, categoria: tab.key),
+            data: { turbo_action: "advance" },
+            title: tab.name, aria: { label: tab.name, current: (active ? "true" : nil) },
+            class: "shrink-0 inline-flex items-center gap-2 rounded-full px-3 h-9 text-sm transition-colors " \
+                   "#{active ? 'text-canvas font-medium' : 'text-muted hover:text-ink hover:bg-elevated'}",
+            style: (active ? "background: #{tab.color}" : nil) do %>
+        <%= budget_icon(tab.key) %>
+        <span class="<%= active ? '' : 'max-md:sr-only' %>"><%= tab.name %></span>
+      <% end %>
+    <% end %>
+  </nav>
+
+  <div class="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+    <h3 class="font-medium" style="color: <%= category.color %>"><%= category.name %></h3>
+    <% if presets.any? %>
+      <p class="text-xs text-muted">
+        Cadastrados <span class="tabular-nums text-ink"><%= money(presets_total) %></span>
+        de <span class="tabular-nums"><%= money(row.planned) %></span> previstos (<%= row.percent %>% da renda)
+        <% if presets_total > row.planned %><span class="text-expense">— passa da meta</span><% end %>
+      </p>
+    <% end %>
+  </div>
+
+  <% if presets.any? %>
+    <ul class="divide-y divide-dashed divide-hairline mb-6">
+      <li class="flex items-center gap-3 pb-2 text-xs text-muted">
+        <span class="flex-1">Custo</span>
+        <span class="w-32 text-right">Valor</span>
+        <span class="w-[4.5rem]"></span>
+      </li>
+      <% presets.each do |preset| %>
+        <li class="flex items-center gap-3 py-2.5">
+          <span class="flex-1 min-w-0 truncate font-medium"><%= preset.description %></span>
+          <span class="w-32 text-right tabular-nums"><%= money(preset.amount) %></span>
+          <span class="w-[4.5rem] flex items-center justify-end gap-1">
+            <%= link_to action_icon(:pencil), edit_budget_preset_path(preset, month: month_param),
+                  class: icon_button_classes, title: "Editar", aria: { label: "Editar #{preset.description}" } %>
+            <%= button_to budget_preset_path(preset, month: month_param), method: :delete,
+                  class: icon_button_classes(:danger), title: "Excluir", aria: { label: "Excluir #{preset.description}" },
+                  form: { data: { turbo_confirm: "Excluir #{preset.description} do auto preenchimento? Os lançamentos já feitos ficam." } } do %>
+              <%= action_icon(:trash) %>
+            <% end %>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-sm text-muted mb-6">Nenhum custo cadastrado em <%= category.name %>.</p>
+  <% end %>
+
+  <h4 class="text-sm font-medium text-brand mb-3">Adicionar custo</h4>
+  <%= form_with model: preset, class: "space-y-3" do |form| %>
+    <%= render "shared/errors", record: preset %>
+    <%= hidden_field_tag :month, month_param %>
+    <%= form.hidden_field :category %>
+
+    <div class="grid gap-3 sm:grid-cols-[1fr_14rem_auto] sm:items-end">
+      <div>
+        <%= form.label :description, "Nome", class: "label" %>
+        <%= form.text_field :description, placeholder: "Nome do gasto" %>
+      </div>
+      <%= render "shared/money_field", form: form, field: :amount, placeholder: "0,00" %>
+      <%= form.submit "+ Adicionar", class: "btn-ghost text-sm h-[42px]" %>
+    </div>
+  <% end %>
+<% end %>

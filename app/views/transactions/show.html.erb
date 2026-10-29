@@ -59,16 +59,6 @@
           </dd>
         </div>
       <% end %>
-
-      <% if @transaction.recurring_rule %>
-        <div>
-          <dt class="text-muted">Origem</dt>
-          <dd class="mt-0.5">
-            Gerado pela recorrência
-            <%= link_to @transaction.recurring_rule.description, recurring_rules_path, class: "text-brand hover:underline" %>
-          </dd>
-        </div>
-      <% end %>
     </dl>
 
     <div class="mt-6 pt-5 border-t border-hairline">

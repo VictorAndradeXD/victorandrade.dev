@@ -1,0 +1,30 @@
+<% content_for :title, "Editar gasto do auto preenchimento" %>
+<% month_param = params[:month].presence || Date.current.strftime("%Y-%m") %>
+
+<%# Mesmo frame do painel: dentro do orçamento, a edição aparece no lugar da
+    lista; aberta direto pela URL, vira uma página comum. %>
+<%= turbo_frame_tag "budget_presets" do %>
+  <h3 class="font-medium mb-4">Editar <span class="text-muted font-normal"><%= @preset.description_was %></span></h3>
+
+  <%= form_with model: @preset, class: "space-y-4" do |form| %>
+    <%= render "shared/errors", record: @preset %>
+    <%= hidden_field_tag :month, month_param %>
+
+    <div class="grid gap-3 sm:grid-cols-3">
+      <div>
+        <%= form.label :description, "Nome", class: "label" %>
+        <%= form.text_field :description, autofocus: true %>
+      </div>
+      <%= render "shared/money_field", form: form, field: :amount %>
+      <div>
+        <%= form.label :category, "Meta", class: "label" %>
+        <%= form.select :category, Budget.category_options %>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <%= form.submit "Salvar", class: "btn-primary text-sm" %>
+      <%= link_to "Cancelar", budget_path(month: month_param, categoria: @preset.category_was), class: "btn-ghost text-sm" %>
+    </div>
+  <% end %>
+<% end %>

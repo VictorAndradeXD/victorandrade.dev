@@ -64,7 +64,7 @@ en:
         summary: A dark-first personal finance manager on Rails 8 — and one module of the site you are reading right now.
         highlights:
           - Card statements modeled as a parent transaction broken into detail lines, with the remainder left undescribed and the sum constrained to never exceed the parent.
-          - Recurring rules and installment plans, a per-day balance calendar and a printable statement with its own print stylesheet.
+          - A household budget with goals per spending category, installment plans, a per-day balance calendar and a printable statement with its own print stylesheet.
           - Rails 8 with Hotwire and import maps — no build step for JavaScript — over PostgreSQL, with Argon2id password hashing.
           - Runtime theming through CSS custom properties, so dark and light swap without recompiling Tailwind.
 

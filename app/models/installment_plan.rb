@@ -6,6 +6,8 @@ class InstallmentPlan < ApplicationRecord
 
   enum :kind, Transaction::KINDS.index_by(&:to_sym), validate: true
 
+  include BudgetCategorized
+
   validates :description, presence: true
   validates :total_amount, numericality: { greater_than: 0 }
   validates :installments_count, numericality: { in: 2..360 }
@@ -26,7 +28,7 @@ class InstallmentPlan < ApplicationRecord
     def build_installments!
       installment_amounts.each_with_index do |amount, index|
         transactions.create!(
-          user: user, account: account, tag: tag, kind: kind,
+          user: user, account: account, tag: tag, kind: kind, budget_category: budget_category,
           description: "#{description} (#{index + 1}/#{installments_count})",
           amount: amount,
           occurred_on: first_due_on >> index,

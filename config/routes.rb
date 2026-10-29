@@ -30,12 +30,17 @@ Rails.application.routes.draw do
     resources :transactions
     resources :accounts
     resources :tags
-    resources :recurring_rules do
-      member { post :materialize }
-    end
     resources :installment_plans, only: %i[index new create destroy]
 
     resource :statement, only: :show, path: "extrato"
+
+    # Orçamento doméstico: metas em % da renda, comparadas com o que foi gasto.
+    resource :budget, only: :show, path: "orcamento"
+    resource :budget_goals, only: %i[edit update], path: "orcamento/metas", path_names: { edit: "" }
+    resource :budget_income, only: :update, path: "orcamento/renda"
+    resources :budget_presets, only: %i[create edit update destroy], path: "orcamento/auto-preenchimento" do
+      collection { post :fill, path: "preencher" }
+    end
   end
 
   # App instalável no celular (PWA). O manifest aponta para /app, que manda

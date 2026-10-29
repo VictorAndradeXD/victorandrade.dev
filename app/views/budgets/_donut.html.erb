@@ -1,0 +1,32 @@
+<%#
+  Donut das metas. `segments` é [[key, nome, valor, cor], ...] e `total` é o
+  denominador — na tela de metas é max(soma, 100), então sobra arco vazio
+  quando falta distribuir e o anel fecha inteiro quando passa de 100%.
+  Com `live: true` cada arco vira target do budget-goals, que o redesenha
+  conforme os sliders mexem.
+%>
+<%
+  live = local_assigns.fetch(:live, false)
+  radius = 70
+  circumference = 2 * Math::PI * radius
+  offset = 0.0
+%>
+<svg viewBox="0 0 180 180" class="w-full h-full -rotate-90"
+     <% if live %>data-budget-goals-circumference="<%= circumference %>"<% end %>>
+  <circle cx="90" cy="90" r="<%= radius %>" fill="none" stroke="var(--color-elevated)" stroke-width="18" />
+
+  <% segments.each do |(key, name, value, color)| %>
+    <%
+      fraction = total.to_d.positive? ? (value.to_d / total.to_d).to_f : 0
+      length = fraction * circumference
+    %>
+    <circle cx="90" cy="90" r="<%= radius %>" fill="none"
+            stroke="<%= color %>" stroke-width="18"
+            stroke-dasharray="<%= length %> <%= circumference - length %>"
+            stroke-dashoffset="<%= -offset %>"
+            <% if live %>data-budget-goals-target="segment" data-key="<%= key %>"<% end %>>
+      <title><%= name %></title>
+    </circle>
+    <% offset += length %>
+  <% end %>
+</svg>

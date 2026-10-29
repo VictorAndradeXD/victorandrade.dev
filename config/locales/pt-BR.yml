@@ -92,8 +92,3 @@ pt-BR:
       income: Entrada
       expense: Saída
 
-  recurring_rule:
-    frequencies:
-      weekly: Semanal
-      monthly: Mensal
-      yearly: Anual

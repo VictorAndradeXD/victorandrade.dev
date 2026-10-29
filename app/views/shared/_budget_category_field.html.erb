@@ -1,0 +1,5 @@
+<%# Meta do orçamento. Só despesa conta; numa entrada o model limpa o campo. %>
+<div class="<%= local_assigns.fetch(:wrapper_class, "") %>">
+  <%= form.label :budget_category, "Meta do orçamento", class: "label" %>
+  <%= form.select :budget_category, Budget.category_options, { include_blank: "Sem meta" } %>
+</div>

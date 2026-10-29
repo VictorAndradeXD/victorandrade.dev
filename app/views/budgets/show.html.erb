@@ -1,0 +1,228 @@
+<% content_for :title, "Orçamento doméstico" %>
+<% month_param = @month.strftime("%Y-%m") %>
+
+<%= render "budgets/tabs", month: @month, current: :budget %>
+
+<div class="flex flex-wrap items-end justify-between gap-4 mb-7">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Orçamento doméstico</h1>
+    <p class="text-muted text-sm mt-1">Controle seu orçamento com base nas suas próprias metas e rendimentos.</p>
+  </div>
+
+  <div class="flex flex-wrap items-end gap-3">
+    <div class="flex items-center gap-2">
+      <%= link_to "‹", budget_path(month: (@month - 1.month).strftime("%Y-%m")), class: "btn-ghost px-3", aria: { label: "Mês anterior" } %>
+      <span class="px-3 py-2 rounded-lg bg-brand/15 border border-brand/30 text-sm font-medium whitespace-nowrap"><%= month_label(@month) %></span>
+      <%= link_to "›", budget_path(month: (@month + 1.month).strftime("%Y-%m")), class: "btn-ghost px-3", aria: { label: "Próximo mês" } %>
+    </div>
+
+    <%# A renda aparece como valor; abrir o <details> revela o ajuste. Sem
+        JavaScript, e sem um campo pré-preenchido que, salvo sem querer,
+        congelaria a renda e pararia de acompanhar as receitas novas. %>
+    <details class="relative group">
+      <summary class="list-none cursor-pointer select-none">
+        <span class="block text-[11px] text-brand mb-1">Renda do mês</span>
+        <span class="flex items-center gap-2 px-3 py-2 rounded-lg border border-hairline bg-elevated text-sm tabular-nums group-open:border-brand">
+          <%= money(@budget.income) %>
+          <% if @budget.income_adjusted? %><span class="text-[10px] uppercase tracking-wide text-muted">ajustada</span><% end %>
+          <%= action_icon(:pencil) %>
+        </span>
+      </summary>
+
+      <div class="absolute right-0 z-20 mt-2 w-72 card shadow-2xl space-y-3">
+        <%= form_with url: budget_income_path, method: :patch, scope: :budget_income, class: "space-y-3" do |form| %>
+          <%= hidden_field_tag :month, month_param %>
+          <div>
+            <%= form.label :amount, "Renda usada no orçamento", class: "label" %>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-3 flex items-center text-muted text-sm pointer-events-none select-none">R$</span>
+              <%= form.number_field :amount, step: "0.01", min: "0", class: "pl-10 tabular-nums",
+                    value: @budget.income_override && format("%.2f", @budget.income_override.amount),
+                    placeholder: format("%.2f", @budget.recorded_income) %>
+            </div>
+          </div>
+          <p class="text-xs text-muted">
+            Receitas lançadas em <%= month_label(@month) %>: <span class="text-ink tabular-nums"><%= money(@budget.recorded_income) %></span>.
+            Deixe vazio para usar essa soma.
+          </p>
+          <%= form.submit "Salvar renda", class: "btn-primary text-sm w-full" %>
+        <% end %>
+      </div>
+    </details>
+  </div>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-12">
+  <section class="card min-w-0 lg:col-span-3">
+    <h2 class="font-medium text-brand mb-4">Gastos</h2>
+
+    <%
+      segments = @budget.rows.select { it.spent.positive? }
+        .map { [ it.category.key, it.category.name, it.spent, it.category.color ] }
+      segments << [ nil, "Sem meta", @budget.unassigned_spent, Budget::UNASSIGNED_COLOR ] if @budget.unassigned_spent.positive?
+    %>
+
+    <% if segments.any? %>
+      <div class="relative w-40 h-40 mx-auto">
+        <%= render "budgets/donut", segments: segments, total: @budget.total_spent %>
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span class="font-semibold text-expense tabular-nums"><%= money(@budget.total_spent) %></span>
+          <span class="text-xs text-muted">gastos</span>
+        </div>
+      </div>
+    <% else %>
+      <p class="text-muted text-sm py-10 text-center">Você não possui gastos lançados em <%= month_label(@month) %>.</p>
+    <% end %>
+
+    <ul class="mt-5 space-y-1.5 text-sm">
+      <% @budget.rows.each do |row| %>
+        <li class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background: <%= row.category.color %>"></span>
+          <span class="text-muted truncate"><%= row.category.name %></span>
+        </li>
+      <% end %>
+      <% if @budget.unassigned_spent.positive? %>
+        <li class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background: <%= Budget::UNASSIGNED_COLOR %>"></span>
+          <span class="text-muted truncate">Sem meta</span>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+
+  <section class="card min-w-0 lg:col-span-6">
+    <h2 class="font-medium text-brand mb-4">Resumo</h2>
+
+    <% if @budget.income.zero? %>
+      <p class="mb-4 rounded-lg border border-amber-400/25 bg-amber-400/10 text-amber-400 px-3 py-2 text-sm">
+        Sem renda em <%= month_label(@month) %>: lance as receitas do mês ou ajuste a renda lá em cima
+        para as metas virarem valores.
+      </p>
+    <% end %>
+
+    <div class="overflow-x-auto -mx-5 px-5">
+      <table class="w-full min-w-[34rem] text-sm">
+        <thead>
+          <tr class="text-left text-muted">
+            <th class="font-medium pb-2">Meta</th>
+            <th class="font-medium pb-2 text-right">Valor gasto</th>
+            <th class="font-medium pb-2 text-right">Devo gastar</th>
+            <th class="font-medium pb-2 text-right">Utilizado</th>
+            <th class="font-medium pb-2 text-right" title="Quanto da renda do mês este gasto representa">Da renda</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-dashed divide-hairline">
+          <% @budget.rows.each do |row| %>
+            <tr>
+              <td class="py-2.5 pr-3 font-medium whitespace-nowrap">
+                <span class="inline-block w-2 h-2 rounded-full mr-1.5 align-middle" style="background: <%= row.category.color %>"></span>
+                <%= row.category.name %>
+              </td>
+              <td class="py-2.5 text-right tabular-nums"><%= money(row.spent) %></td>
+              <td class="py-2.5 text-right tabular-nums text-muted"><%= money(row.planned) %></td>
+              <td class="py-2.5 text-right tabular-nums <%= budget_used_color(row.used) %>"><%= budget_ratio(row.used) %></td>
+              <td class="py-2.5 text-right tabular-nums text-muted">
+                <%= budget_ratio(@budget.income.positive? ? row.spent / @budget.income : nil) %>
+              </td>
+            </tr>
+          <% end %>
+
+          <% if @budget.unassigned_spent.positive? %>
+            <tr>
+              <td class="py-2.5 pr-3 whitespace-nowrap">
+                <%= link_to "Sem meta", transactions_path(month: month_param), class: "text-muted hover:text-ink underline decoration-dotted",
+                      title: "Despesas do mês sem meta: edite o lançamento e escolha uma" %>
+              </td>
+              <td class="py-2.5 text-right tabular-nums"><%= money(@budget.unassigned_spent) %></td>
+              <td class="py-2.5 text-right text-muted">—</td>
+              <td class="py-2.5 text-right text-muted">—</td>
+              <td class="py-2.5 text-right tabular-nums text-muted">
+                <%= budget_ratio(@budget.income.positive? ? @budget.unassigned_spent / @budget.income : nil) %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex flex-wrap gap-x-8 gap-y-3 mt-6">
+      <div>
+        <p class="text-xl font-semibold tabular-nums text-expense"><%= money(@budget.total_spent) %></p>
+        <p class="text-xs text-muted">Total gasto</p>
+      </div>
+      <div>
+        <p class="text-xl font-semibold tabular-nums"><%= money(@budget.total_planned) %></p>
+        <p class="text-xs text-muted">Total a gastar</p>
+      </div>
+      <div>
+        <p class="text-xl font-semibold tabular-nums <%= budget_used_color(@budget.total_used) %>"><%= budget_ratio(@budget.total_used) %></p>
+        <p class="text-xs text-muted">Utilizado</p>
+      </div>
+    </div>
+
+    <% if @budget.unassigned_spent.positive? %>
+      <p class="text-xs text-muted mt-4">
+        <%= money(@budget.unassigned_spent) %> em despesas ainda sem meta. Elas contam no total gasto, mas não em nenhuma meta.
+      </p>
+    <% end %>
+  </section>
+
+  <section class="card min-w-0 lg:col-span-3 flex flex-col">
+    <h2 class="font-medium text-brand mb-4">Metas</h2>
+
+    <ul class="space-y-3 text-sm">
+      <% @budget.rows.each do |row| %>
+        <li class="flex items-center justify-between gap-3">
+          <span class="font-medium"><%= row.category.name %></span>
+          <span class="tabular-nums"><%= row.percent %>%</span>
+        </li>
+      <% end %>
+    </ul>
+
+    <% if @budget.allocated_percent < BudgetGoalSet::MAX_TOTAL %>
+      <p class="text-xs text-amber-400 mt-4">
+        <%= BudgetGoalSet::MAX_TOTAL - @budget.allocated_percent %>% da renda sem meta.
+      </p>
+    <% end %>
+
+    <div class="mt-6">
+      <%= link_to "Editar", edit_budget_goals_path(month: month_param), class: "btn-ghost text-sm" %>
+    </div>
+  </section>
+</div>
+
+<section class="card mt-6" id="auto-preenchimento">
+  <div class="flex flex-wrap items-start justify-between gap-4 mb-5">
+    <div>
+      <h2 class="font-medium text-brand">Auto preenchimento</h2>
+      <p class="text-muted text-sm mt-1">
+        Cadastre os gastos que se repetem todo mês — aluguel, luz, água — e lance todos de uma vez.
+      </p>
+    </div>
+
+    <%# Fora do frame de propósito: preencher muda o resumo lá em cima, então
+        a resposta tem que trocar a página inteira. %>
+    <%= form_with url: fill_budget_presets_path, class: "flex flex-wrap items-center gap-2", data: { turbo_frame: "_top" } do %>
+      <%= hidden_field_tag :month, month_param %>
+      <% if selectable_accounts.size > 1 %>
+        <%= select_tag :account_id, options_from_collection_for_select(selectable_accounts, :id, :name),
+              prompt: "Conta", required: true, class: "w-auto text-sm", aria: { label: "Conta dos gastos" } %>
+      <% end %>
+      <%= submit_tag "Preencher #{month_label(@month)}", class: "btn-primary text-sm",
+            disabled: selectable_accounts.empty?,
+            title: "Lança no dia 1º do mês cada gasto cadastrado que ainda não exista no mês" %>
+    <% end %>
+  </div>
+
+  <% if selectable_accounts.empty? %>
+    <p class="text-sm text-expense mb-4">
+      Para preencher é preciso uma conta ativa. <%= link_to "Cadastre uma", new_account_path, class: "underline hover:no-underline" %>.
+    </p>
+  <% end %>
+
+  <%= render "budget_presets/panel", budget: @budget, category: @category, preset: @preset %>
+
+  <p class="text-xs text-muted mt-5">
+    * Os gastos entram no dia 1º do mês. Se já existir no mês um gasto com o mesmo nome, ele não é sobreposto.
+  </p>
+</section>

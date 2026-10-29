@@ -132,7 +132,7 @@
   /* Só campos de entrada. Sem o :not, o `w-full` pegaria também os
      input[type=submit] e esticaria todo botão de formulário pela linha
      inteira, por cima do .btn-primary (que não define largura). */
-  input:not([type="submit"], [type="button"], [type="reset"], [type="checkbox"], [type="radio"]),
+  input:not([type="submit"], [type="button"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"]),
   select,
   textarea {
     @apply bg-elevated border border-hairline text-ink rounded-lg px-3 py-2 w-full
@@ -141,6 +141,17 @@
 
   input[type="checkbox"], input[type="radio"] {
     @apply w-auto accent-brand;
+  }
+
+  /* Slider das metas. A cor vem do accent-color inline de cada meta. */
+  input[type="range"] {
+    @apply w-full h-2 cursor-pointer accent-brand;
+  }
+
+  /* O <summary> do <details> traz um triângulo nativo; as telas que usam
+     details desenham o próprio indicador. */
+  summary::-webkit-details-marker {
+    display: none;
   }
 
   /* O <dialog> nativo vem branco por padrão; sem isto o modal fura o tema.
